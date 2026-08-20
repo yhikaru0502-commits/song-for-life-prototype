@@ -243,6 +243,27 @@ button{font:inherit}
   font-weight:900;
 }
 
+
+.node.medium{width:70px;height:70px;font-size:11px}
+.node.medium .icon{font-size:23px}
+.node.compact{width:64px;height:64px;font-size:10px}
+.node.compact .icon{font-size:21px}
+.node.compact small{font-size:7px}
+#waveFlash{
+  position:absolute;inset:0;z-index:70;
+  pointer-events:none;
+  opacity:0;
+  background:
+    radial-gradient(circle at 50% 48%,rgba(255,255,255,1) 0%,rgba(210,235,255,.96) 18%,rgba(205,165,255,.65) 45%,rgba(255,255,255,0) 76%);
+  mix-blend-mode:screen;
+}
+#waveFlash.fire{animation:waveFlash .28s ease-out both}
+@keyframes waveFlash{
+  0%{opacity:0}
+  32%{opacity:1}
+  100%{opacity:0}
+}
+
 </style>
 </head>
 <body>
@@ -305,6 +326,8 @@ button{font:inherit}
     <div id="dragHint">スキルを見つけて一筆書き　指を離すと即決定</div>
 
     <div id="preCountdown" class="centerOverlay">3</div>
+    <div id="waveFlash"></div>
+
     <div id="cutinOverlay" class="centerOverlay">
       <video id="cutinVideo" muted playsinline preload="auto"></video>
       <div id="cutinScoreBox">
@@ -365,6 +388,7 @@ const resetBtn=document.getElementById("resetBtn");
 const cutinOverlay=document.getElementById("cutinOverlay");
 const cutinVideo=document.getElementById("cutinVideo");
 const finalScoreOverlay=document.getElementById("finalScoreOverlay");
+const waveFlash=document.getElementById("waveFlash");
 
 let turn=0,score=0,audience=20,active=false,time=7,timer=null;
 let currentNodes=[],drawn=[],dragging=false;
@@ -388,7 +412,8 @@ function randomPoints(count){
   while(pts.length<count&&tries<400){
     tries++;
     const p={x:13+Math.random()*74,y:14+Math.random()*58};
-    const ok=pts.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>19);
+    const minDist=count>=9?12.5:(count>=8?14:16);
+    const ok=pts.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>minDist);
     if(ok)pts.push(p);
   }
   while(pts.length<count)pts.push({x:15+Math.random()*70,y:15+Math.random()*55});
@@ -407,12 +432,18 @@ function spawn(){
   nodeLayer.innerHTML="";
   drawn=[];currentNodes=[];
   document.getElementById("selectedCount").textContent="0 CHAIN";
-  const picks=shuffled(skills).slice(0,5);
-  const pts=randomPoints(5);
+  const nodeCounts=[6,7,8,8,9,10];
+  const nodeCount=nodeCounts[turn]||10;
+  const pool=[];
+  while(pool.length<nodeCount){ pool.push(...shuffled(skills)); }
+  const picks=pool.slice(0,nodeCount);
+  const pts=randomPoints(nodeCount);
 
   picks.forEach((s,i)=>{
     const el=document.createElement("div");
     el.className=`node ${s.type}`;
+    if(nodeCount>=9) el.classList.add("compact");
+    else if(nodeCount>=8) el.classList.add("medium");
     el.style.left=pts[i].x+"%";
     el.style.top=pts[i].y+"%";
     el.innerHTML=`<div class="icon">${s.icon}</div><div>${s.name}</div><small>${s.label}</small>`;
@@ -442,21 +473,60 @@ function drawLines(temp){
   const w=canvas.width/devicePixelRatio,h=canvas.height/devicePixelRatio;
   ctx.clearRect(0,0,w,h);
   if(!drawn.length)return;
-  ctx.lineCap="round";ctx.lineJoin="round";ctx.lineWidth=6;
-  const grad=ctx.createLinearGradient(0,0,w,h);
-  grad.addColorStop(0,"#66dcff");grad.addColorStop(.55,"#ff6fbe");grad.addColorStop(1,"#ffd56b");
-  ctx.strokeStyle=grad;ctx.shadowColor="#cf88ff";ctx.shadowBlur=15;
-  ctx.beginPath();
-  drawn.forEach((el,i)=>{
-    const p=nodeCenter(el);
-    if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);
-  });
-  if(temp)ctx.lineTo(temp.x,temp.y);
-  ctx.stroke();
-  ctx.shadowBlur=0;
-}
 
-function localPos(e){
+  const pts=drawn.map(nodeCenter);
+  if(temp) pts.push(temp);
+  if(pts.length<2)return;
+
+  // Core luminous "existence wave"
+  const grad=ctx.createLinearGradient(0,0,w,h);
+  grad.addColorStop(0,"rgba(110,225,255,.98)");
+  grad.addColorStop(.45,"rgba(220,160,255,.98)");
+  grad.addColorStop(1,"rgba(255,235,150,.98)");
+
+  ctx.save();
+  ctx.lineCap="round";ctx.lineJoin="round";
+
+  // broad aura
+  ctx.beginPath();
+  pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.strokeStyle="rgba(190,150,255,.28)";
+  ctx.lineWidth=15;
+  ctx.shadowColor="rgba(180,125,255,.95)";
+  ctx.shadowBlur=24;
+  ctx.stroke();
+
+  // bright core
+  ctx.beginPath();
+  pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.strokeStyle=grad;
+  ctx.lineWidth=4.5;
+  ctx.shadowColor="rgba(125,225,255,.95)";
+  ctx.shadowBlur=12;
+  ctx.stroke();
+
+  // sparkling particles distributed along the traced route
+  const now=performance.now()/180;
+  for(let i=0;i<pts.length-1;i++){
+    const a=pts[i],b=pts[i+1];
+    const len=Math.hypot(b.x-a.x,b.y-a.y);
+    const count=Math.max(2,Math.floor(len/24));
+    for(let j=0;j<count;j++){
+      const t=(j/count + (now*.045))%1;
+      const x=a.x+(b.x-a.x)*t;
+      const y=a.y+(b.y-a.y)*t;
+      const pulse=.55+.45*Math.sin(now+j*1.7+i);
+      const r=1.2+2.0*pulse;
+      ctx.beginPath();
+      ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${.55+.4*pulse})`;
+      ctx.shadowColor="rgba(220,190,255,1)";
+      ctx.shadowBlur=10;
+      ctx.fill();
+    }
+  }
+  ctx.restore();
+}function localPos(e){
   const r=game.getBoundingClientRect();
   return{x:e.clientX-r.left,y:e.clientY-r.top};
 }
@@ -604,11 +674,29 @@ function finishTurn(){
   nodeLayer.innerHTML="";
   cutinVideo.src=`cutin_${completedTurn}.mp4`;
   cutinVideo.currentTime=0;
-  cutinOverlay.style.display="flex";
+  cutinVideo.load();
+
+  const fireFlash=()=>{
+    waveFlash.classList.remove("fire");
+    void waveFlash.offsetWidth;
+    waveFlash.classList.add("fire");
+  };
+
+  const showCutin=()=>{
+    fireFlash();
+    setTimeout(()=>{
+      cutinOverlay.style.display="flex";
+      const p=cutinVideo.play();
+      if(p && typeof p.catch==="function"){
+        p.catch(()=>setTimeout(advance,1800));
+      }
+    },110);
+  };
 
   const advance=()=>{
     cutinVideo.removeEventListener("ended",advance);
-    cutinOverlay.style.display="none";
+    fireFlash();
+    setTimeout(()=>{ cutinOverlay.style.display="none"; },90);
     cutinVideo.pause();
 
     if(turn>=6){
@@ -618,19 +706,15 @@ function finishTurn(){
       document.getElementById("themeDesc").textContent="6ターン終了";
 
       document.getElementById("finalScoreValue").textContent=score.toLocaleString();
-      finalScoreOverlay.style.display="flex";
+      setTimeout(()=>{ finalScoreOverlay.style.display="flex"; },120);
     }else{
-      startTurn();
+      setTimeout(startTurn,120);
     }
   };
 
   cutinVideo.addEventListener("ended",advance,{once:true});
-  const p=cutinVideo.play();
-  if(p && typeof p.catch==="function"){
-    p.catch(()=>{
-      setTimeout(advance,1800);
-    });
-  }
+  if(cutinVideo.readyState>=2) showCutin();
+  else cutinVideo.addEventListener("loadeddata",showCutin,{once:true});
 }
 
 function animateNodes(now){
@@ -677,6 +761,7 @@ function resetGame(){
   finalScoreOverlay.style.display="none";
   cutinVideo.pause();
   cutinVideo.removeAttribute("src");
+  waveFlash.classList.remove("fire");
   document.getElementById("score").textContent="0";
   document.getElementById("audience").textContent="20%";
   document.getElementById("countdown").textContent="7";
