@@ -251,12 +251,17 @@ button{font:inherit}
   object-position:center center;
   z-index:0;
   background:#050812;
+  pointer-events:none;
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
 }
 #videoShade{
   position:absolute;
   inset:0;
   z-index:1;
   pointer-events:none;
+  touch-action:none;
   background:
     linear-gradient(180deg,rgba(3,7,18,.10) 0%,rgba(3,7,18,.02) 42%,rgba(3,7,18,.16) 100%);
 }
@@ -267,6 +272,21 @@ button{font:inherit}
 #nodeLayer,#lineLayer{z-index:10}
 #dragHint{z-index:18}
 .centerOverlay{z-index:50}
+
+
+#game{
+  touch-action:none;
+  -webkit-user-select:none;
+  user-select:none;
+}
+#nodeLayer{
+  pointer-events:auto;
+  touch-action:none;
+}
+.node{
+  pointer-events:auto;
+  touch-action:none;
+}
 
 </style>
 </head>
@@ -505,6 +525,45 @@ game.addEventListener("pointermove",e=>{
   if(n)addNode(n);
   drawLines(pos);
 });
+
+// iOS Safari fallback: track finger movement directly if Pointer Events are unreliable over video.
+let touchDragging=false;
+game.addEventListener("touchstart",e=>{
+  if(!active) return;
+  touchDragging=true;
+  const t=e.touches[0];
+  const r=game.getBoundingClientRect();
+  const pos={x:t.clientX-r.left,y:t.clientY-r.top};
+  const n=hitNode(pos);
+  if(n)addNode(n);
+  e.preventDefault();
+},{passive:false});
+
+game.addEventListener("touchmove",e=>{
+  if(!active||!touchDragging) return;
+  const t=e.touches[0];
+  const r=game.getBoundingClientRect();
+  const pos={x:t.clientX-r.left,y:t.clientY-r.top};
+  const n=hitNode(pos);
+  if(n)addNode(n);
+  drawLines(pos);
+  e.preventDefault();
+},{passive:false});
+
+game.addEventListener("touchend",e=>{
+  if(!active||!touchDragging) return;
+  touchDragging=false;
+  drawLines();
+  if(drawn.length>0) finishTurn();
+  e.preventDefault();
+},{passive:false});
+
+game.addEventListener("touchcancel",e=>{
+  touchDragging=false;
+  if(active&&drawn.length>0) finishTurn();
+  e.preventDefault();
+},{passive:false});
+
 function release(e){
   if(!active||!dragging)return;
   dragging=false;
