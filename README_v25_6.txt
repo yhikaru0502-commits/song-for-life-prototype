@@ -1,0 +1,11 @@
+SONG FOR LIFE v25.6
+- 最新 ADVシナリオ管理(4).xlsx を正として同梱
+- 新・存在波測定ブース背景 assets/bg/bg_ad_road.png を追加
+- Tap63: 完全暗転＋試験官台詞
+- Tap64: 測定ブース背景＋凛
+- Tap65: 測定ブース上で？？？の声（Mina未表示）
+- Tap66: Minaバストを表示
+- Tap67: 凛＋Mina
+- Tap68-69: 凛＋Minaの二人ADV
+- v25.5の暗転中台詞表示修正を維持
+- PROLOGUE ENDの『凛』大型表示を維持

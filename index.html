@@ -127,9 +127,35 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03050a;col
 .tnode.rhythm.sel::before{background-image:url("assets/wave/rhythm_active.png")}
 .tnode.aura.sel::before{background-image:url("assets/wave/glory_active.png")}
 .tnode.sel{box-shadow:none!important}
+
+
+/* v25.2 DEBUG NAV */
+#devDebug{
+  position:fixed;z-index:9999;top:max(6px,env(safe-area-inset-top));left:50%;
+  transform:translateX(-50%);display:flex;gap:4px;align-items:center;
+  padding:5px 6px;border-radius:999px;background:rgba(0,0,0,.74);
+  border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(8px);
+  max-width:calc(100vw - 12px);overflow-x:auto;white-space:nowrap;
+}
+#devDebug button{
+  flex:0 0 auto;border:1px solid rgba(255,255,255,.16);border-radius:999px;
+  background:rgba(255,255,255,.08);color:#fff;padding:5px 8px;
+  font-size:9px;font-weight:900;letter-spacing:.02em;
+}
+#devDebug button:active{transform:scale(.96)}
+
 </style>
 </head>
 <body>
+
+<div id="devDebug">
+  <button id="dbgAdv">ADV START</button>
+  <button id="dbgTutorial">TUTORIAL</button>
+  <button id="dbgLive">LIVE</button>
+  <button id="dbgAfter">AFTER LIVE</button>
+  <button id="dbgReload">RELOAD</button>
+</div>
+
 <div id="game">
   <div id="bgA"></div><div id="bgB"></div><div id="shade"></div>
   <img id="rin" class="character" alt=""><img id="akari" class="character" alt="">
@@ -362,5 +388,21 @@ q("tap").addEventListener("touchend",e=>{
 },{passive:false});
 document.getElementById("debugAfterLive").onclick=()=>{location.href="adv_after.html?v=253"};
 </script>
+
+<script>
+(() => {
+  const go = p => { location.href = p; };
+  document.getElementById("dbgAdv").onclick = () => go("index.html?v=252");
+  document.getElementById("dbgTutorial").onclick = () => go("live.html?tutorial=1&v=253");
+  document.getElementById("dbgLive").onclick = () => go("live.html?v=253");
+  document.getElementById("dbgAfter").onclick = () => go("adv_after.html?v=252");
+  document.getElementById("dbgReload").onclick = () => {
+    const u = new URL(location.href);
+    u.searchParams.set("_r", Date.now().toString());
+    location.href = u.toString();
+  };
+})();
+</script>
+
 </body>
 </html>
