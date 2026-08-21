@@ -1,19 +1,17 @@
-SONG FOR LIFE v25.4 AFTER LIVE PATCH
+SONG FOR LIFE v25.5 BLACK DIALOG FIX
 
-反映内容:
-- LIVE後冒頭に 試験官「すさまじい存在波です…！！」追加
-- その後、完全暗転のまま
-  凛「……私に、世界と戦える力は、ある？」
-  ？？？「ええ」
-- Tap66-67: Minaバスト mina_02.png
-- Tap68-69: 凛＋Minaの通常ADV二人配置
-  凛=rin_01.png / Mina=mina_01.png
-- 第一次選抜結果〜灯との会話を維持
-- PROLOGUE ENDで
-  「ハーモニア計画・歌姫候補生」の下に
-  「凛」を大きく表示
-- ADVシナリオ管理.xlsxも最新版へ更新
+原因:
+完全暗転用 #black (z-index:50) が、
+台詞ウィンドウ #dialog (z-index:16) より前面にあり、
+Tap63〜65の台詞自体は進行していたが黒画面の裏に隠れていた。
 
-GitHub:
-adv_after.html と ADVシナリオ管理.xlsx を上書き
-→ Commit → Push
+修正:
+- 黒背景はそのまま表示
+- 台詞ウィンドウだけ黒より前面に表示
+- これにより以下が暗転上で見える
+  63 試験官「すさまじい存在波です…！！」
+  64 凛「……私に、世界と戦える力は、ある？」
+  65 ？？？「ええ」
+- 66 Mina「あなたなら、抗えるわ」で暗転解除＋Mina表示
+
+GitHubでは adv_after.html だけ上書きでOKです。

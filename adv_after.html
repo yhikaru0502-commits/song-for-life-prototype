@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>SONG FOR LIFE / AFTER LIVE v25.4</title>
+<title>SONG FOR LIFE / AFTER LIVE v25.5</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
@@ -50,6 +50,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:
   margin-top:8px;font-size:86px;font-weight:1000;line-height:1;
   letter-spacing:.08em;text-shadow:0 0 28px rgba(135,220,255,.30);
 }
+
+
+/* v25.5 BLACK DIALOG FIX
+   Blackout hides BG/characters, but dialogue remains visible above it. */
+#black{z-index:50!important}
+#dialog{z-index:55!important}
+#center{z-index:56!important}
+#tap{z-index:70!important}
 
 </style>
 </head>
