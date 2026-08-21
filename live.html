@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA LIVE Prototype v18</title>
+<title>HARMONIA LIVE Prototype v18.1</title>
 <style>
 :root {
   --glass:rgba(8,12,24,.48);
@@ -304,6 +304,21 @@ button{font:inherit}
   background:rgba(255,255,255,.08);color:#fff;padding:11px 24px;font-weight:900
 }
 
+
+.recipeSeq{display:flex!important;align-items:center;justify-content:center;gap:1px;min-height:32px;font-size:0!important;white-space:nowrap}
+.comboMini{display:inline-block;width:29px;height:29px;flex:0 0 29px;background:center/contain no-repeat;transition:.14s ease}
+.comboMini.voice{background-image:url("assets/wave/voice_normal.png")}
+.comboMini.rhythm{background-image:url("assets/wave/rhythm_normal.png")}
+.comboMini.glory{background-image:url("assets/wave/glory_normal.png")}
+.recipe.possible .comboMini.voice{background-image:url("assets/wave/voice_active.png")}
+.recipe.possible .comboMini.rhythm{background-image:url("assets/wave/rhythm_active.png")}
+.recipe.possible .comboMini.glory{background-image:url("assets/wave/glory_active.png")}
+.recipe.matched .comboMini.voice{background-image:url("assets/wave/voice_judge.png")}
+.recipe.matched .comboMini.rhythm{background-image:url("assets/wave/rhythm_judge.png")}
+.recipe.matched .comboMini.glory{background-image:url("assets/wave/glory_judge.png")}
+.comboArrow{display:inline-flex;align-items:center;justify-content:center;width:10px;flex:0 0 10px;font-size:12px;color:rgba(255,255,255,.68)}
+.recipeName{margin-bottom:0!important}
+
 </style>
 </head>
 <body>
@@ -347,10 +362,10 @@ button{font:inherit}
         <span id="selectedCount">0 CHAIN</span>
       </div>
       <div class="recipeRow">
-        <div class="recipe" data-recipe="SHOUT"><div class="recipeName">SHOUT</div><div class="recipeSeq">● → ●</div></div>
-        <div class="recipe" data-recipe="SCREAM"><div class="recipeName">SCREAM</div><div class="recipeSeq">● → ● → ●</div></div>
-        <div class="recipe" data-recipe="BREAK BEAT"><div class="recipeName">BREAK BEAT</div><div class="recipeSeq">● → ● → ⬡</div></div>
-        <div class="recipe" data-recipe="HOWLING"><div class="recipeName">HOWLING</div><div class="recipeSeq">● → ◆ → ●</div></div>
+        <div class="recipe" data-recipe="SHOUT"><div class="recipeName">SHOUT</div><div class="recipeSeq"><i class="comboMini voice"></i><span class="comboArrow">›</span><i class="comboMini voice"></i></div></div>
+        <div class="recipe" data-recipe="SCREAM"><div class="recipeName">SCREAM</div><div class="recipeSeq"><i class="comboMini voice"></i><span class="comboArrow">›</span><i class="comboMini voice"></i><span class="comboArrow">›</span><i class="comboMini voice"></i></div></div>
+        <div class="recipe" data-recipe="BREAK BEAT"><div class="recipeName">BREAK BEAT</div><div class="recipeSeq"><i class="comboMini voice"></i><span class="comboArrow">›</span><i class="comboMini voice"></i><span class="comboArrow">›</span><i class="comboMini rhythm"></i></div></div>
+        <div class="recipe" data-recipe="HOWLING"><div class="recipeName">HOWLING</div><div class="recipeSeq"><i class="comboMini voice"></i><span class="comboArrow">›</span><i class="comboMini glory"></i><span class="comboArrow">›</span><i class="comboMini voice"></i></div></div>
       </div>
     </div>
 
