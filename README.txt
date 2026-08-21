@@ -1,26 +1,19 @@
-HARMONIA v24.7 SOUND FEEL
+SONG FOR LIFE v25.4 AFTER LIVE PATCH
 
-追加した仮SE:
-- card_select_1〜4.wav : カードを選ぶほど音程が上がる
-- card_set.wav : 4枚SET確定
-- node_voice.wav : 声ノード（澄んだ高域）
-- node_rhythm.wav : 律ノード（アタックのある中域）
-- node_glory.wav : 華ノード（煌めく倍音）
-- combo_1〜4.wav : COMBOが増えるほど上昇、4は解放感を強化
-- rin_unique.wav : 凛固有スキル専用の低い衝撃＋残響
-- turn_start.wav : ターン開始
-- time_end.wav : タイムアップ
+反映内容:
+- LIVE後冒頭に 試験官「すさまじい存在波です…！！」追加
+- その後、完全暗転のまま
+  凛「……私に、世界と戦える力は、ある？」
+  ？？？「ええ」
+- Tap66-67: Minaバスト mina_02.png
+- Tap68-69: 凛＋Minaの通常ADV二人配置
+  凛=rin_01.png / Mina=mina_01.png
+- 第一次選抜結果〜灯との会話を維持
+- PROLOGUE ENDで
+  「ハーモニア計画・歌姫候補生」の下に
+  「凛」を大きく表示
+- ADVシナリオ管理.xlsxも最新版へ更新
 
-実装:
-- カード選択1→4で段階的に音程上昇
-- SET時SE
-- なぞったノード属性ごとのSE
-- COMBO成立数に応じたSE
-- 凛固有ACTIVATE専用SE
-- ターン開始/終了SE
-
-配置:
-live.html
-assets/se/*.wav
-
-GitHub側では live.html と assets/se フォルダをまとめて上書き/追加してください。
+GitHub:
+adv_after.html と ADVシナリオ管理.xlsx を上書き
+→ Commit → Push
