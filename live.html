@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA LIVE UI A / v19</title>
+<title>HARMONIA LIVE v20</title>
 <style>
 :root {
   --glass:rgba(8,12,24,.48);
@@ -341,6 +341,42 @@ button{font:inherit}
 #comboDock .comboWave{width:23px;height:23px}
 #dragHint{bottom:18px!important}
 
+
+/* v20 BASE UI: compact top / free playfield / bottom combo deck */
+#topHud{
+ top:max(7px,env(safe-area-inset-top))!important;
+ left:max(7px,env(safe-area-inset-left))!important;
+ right:max(7px,env(safe-area-inset-right))!important;
+ grid-template-columns:minmax(0,1fr) 64px 58px!important;gap:5px!important;align-items:stretch!important;
+}
+#stageInfo{padding:5px 8px!important;border-radius:11px!important;min-height:42px!important}
+#turnLabel{font-size:11px!important} #difficulty{font-size:7px!important}
+#themeName{font-size:9px!important;margin-top:0!important;display:inline!important}
+#themeDesc{display:none!important}
+#scoreHud,#timerBox{padding:4px 5px!important;min-width:0!important;border-radius:11px!important}
+.hudLabel{font-size:6.5px!important} #score{font-size:12px!important} #countdown{font-size:22px!important}
+#audienceHud{top:58px!important;left:max(8px,env(safe-area-inset-left))!important;padding:4px 7px!important;font-size:7px!important}
+#audienceHud b{font-size:10px!important}
+#resetBtn{top:57px!important;right:max(8px,env(safe-area-inset-right))!important;padding:4px 8px!important;font-size:7px!important;opacity:.72}
+#comboDock{
+ left:max(7px,env(safe-area-inset-left))!important;right:max(7px,env(safe-area-inset-right))!important;
+ top:auto!important;bottom:max(7px,env(safe-area-inset-bottom))!important;width:auto!important;
+ padding:5px 7px 6px!important;border-radius:13px!important;background:rgba(7,11,21,.67)!important;
+}
+#comboDock .comboTitle{display:none!important}
+#comboDock .recipeRow{display:grid!important;grid-template-columns:1fr!important;gap:2px!important;margin:0!important}
+#comboDock .recipe{
+ min-height:0!important;height:29px!important;padding:1px 5px!important;border-radius:7px!important;
+ display:grid!important;grid-template-columns:76px 1fr!important;align-items:center!important;
+ background:rgba(13,18,34,.34)!important;border:1px solid rgba(255,255,255,.065)!important;
+}
+#comboDock .recipeName{text-align:left!important;font-size:7px!important;letter-spacing:.04em!important;padding-left:3px}
+#comboDock .recipeSeq{justify-content:flex-start!important;gap:2px!important;margin:0!important}
+#comboDock .comboWave{width:23px!important;height:23px!important}
+#comboDock .recipeSeq span{font-size:10px!important}
+#dragHint{bottom:143px!important;font-size:7px!important;padding:3px 7px!important;opacity:.78}
+/* keep the entire central interaction field visually clean */
+
 </style>
 </head>
 <body>
@@ -370,7 +406,7 @@ button{font:inherit}
       </div>
     </div>
 
-    <div id="uiVariantTag">UI A</div>
+    
     <div id="audienceHud" class="glass">
       <span>AUDIENCE</span><b id="audience">20%</b>
     </div>
@@ -494,12 +530,12 @@ function randomPoints(count){
   const pts=[];let tries=0;
   while(pts.length<count&&tries<400){
     tries++;
-    const p={x:13+Math.random()*74,y:14+Math.random()*58};
+    const p={x:11+Math.random()*78,y:11+Math.random()*66};
     const minDist=count>=9?12.5:(count>=8?14:16);
     const ok=pts.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>minDist);
     if(ok)pts.push(p);
   }
-  while(pts.length<count)pts.push({x:15+Math.random()*70,y:15+Math.random()*55});
+  while(pts.length<count)pts.push({x:13+Math.random()*74,y:12+Math.random()*64});
   return pts;
 }
 

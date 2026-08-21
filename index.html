@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA ADV v19</title>
+<title>HARMONIA ADV v20</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03050a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
@@ -159,7 +159,7 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03050a;col
           <button class="debugJump" data-tap="41">Tap 41<br>第一次選抜</button>
           <button class="debugJump" data-tap="53">Tap 53<br>チュートリアル</button>
           <button class="debugJump" data-tap="60">Tap 60<br>LIVE START</button>
-          <button class="debugJump" id="debugLiveA">LIVE UI A<br>右上・縦4段</button>
+          <button class="debugJump" id="debugLiveA">LIVE v20<br>上下分離型</button>
           <button class="debugJump" id="debugLiveB">LIVE UI B<br>右端・細HUD</button>
           <button class="debugJump" id="debugLiveC">LIVE UI C<br>右上・2×2</button>
         </div>
@@ -347,7 +347,7 @@ q("debugClose").addEventListener("click",()=>q("debugMenu").style.display="none"
 document.querySelectorAll("[data-tap]").forEach(btn=>{
   btn.addEventListener("click",()=>jumpToTap(Number(btn.dataset.tap)));
 });
-q("debugLiveA").addEventListener("click",()=>{window.location.href="live_A.html?v=19";});
+q("debugLiveA").addEventListener("click",()=>{window.location.href="live.html?v=20";});
 q("debugLiveB").addEventListener("click",()=>{window.location.href="live_B.html?v=19";});
 q("debugLiveC").addEventListener("click",()=>{window.location.href="live_C.html?v=19";});
 
