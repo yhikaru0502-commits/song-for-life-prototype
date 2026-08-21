@@ -504,6 +504,81 @@ button{font:inherit}
 #uniqueFxName{font-size:25px;font-weight:1000;margin-top:4px}
 #uniqueFxSub{font-size:9px;margin-top:5px;color:rgba(255,255,255,.78)}
 @keyframes uniquePulse{0%{opacity:0;transform:scale(1.07)}25%{opacity:1}100%{opacity:0;transform:scale(1)}}
+
+/* v24.1: hand visibility + lower HUD icon fix */
+#handOverlay{
+  background:transparent!important;
+}
+#handPanel{
+  background:rgba(7,11,21,.56)!important;
+  border-color:rgba(255,255,255,.13)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  max-height:42%!important;
+}
+.handCard{
+  background:rgba(15,20,37,.56)!important;
+}
+.handCard.rinCard{
+  background:rgba(62,10,22,.58)!important;
+}
+#handGuide{
+  text-shadow:0 1px 6px rgba(0,0,0,.95);
+}
+#handTitle,#handCount{
+  text-shadow:0 1px 6px rgba(0,0,0,.95);
+}
+#comboDock .recipeSeq img.comboWave{
+  width:23px!important;
+  height:23px!important;
+  object-fit:contain!important;
+  flex:0 0 23px!important;
+}
+
+
+/* v24.2 SELECT UI readability */
+#handPanel{
+  background:rgba(5,8,17,.30)!important;
+  border-color:rgba(255,255,255,.22)!important;
+  box-shadow:0 0 20px rgba(0,0,0,.18)!important;
+}
+.handCard{
+  background:rgba(10,15,29,.34)!important;
+  border-color:rgba(255,255,255,.20)!important;
+  min-height:96px!important;
+}
+.handCard.rinCard{
+  background:rgba(62,10,22,.36)!important;
+}
+.handCard .cardName{
+  font-size:10px!important;
+  line-height:1.25!important;
+  font-weight:900!important;
+  text-shadow:0 1px 5px #000,0 0 8px #000!important;
+}
+.handCard .cardEffect{
+  font-size:9px!important;
+  line-height:1.25!important;
+  font-weight:800!important;
+  color:rgba(255,255,255,.92)!important;
+  text-shadow:0 1px 5px #000,0 0 8px #000!important;
+}
+.handCard .cardSeq{
+  margin-top:7px!important;
+}
+.handCard .cardSeq img{
+  width:25px!important;
+  height:25px!important;
+}
+#handTitle{
+  font-size:14px!important;
+  font-weight:1000!important;
+}
+#handGuide{
+  font-size:10px!important;
+  color:rgba(255,255,255,.9)!important;
+}
+
 </style>
 </head>
 <body>
@@ -646,7 +721,7 @@ const $=id=>document.getElementById(id),game=$("game"),nodeLayer=$("nodeLayer"),
 let turn=0,score=0,audience=20,time=TURN_TIME,timer=null,active=false,dragging=false,resolved=false,currentNodes=[],drawn=[],selectedRecipes=[],handCards=[],handSelection=[],lastMove=0;
 let tutorial=new URLSearchParams(location.search).get("tutorial")==="1",tutorialPhase=tutorial?"select":"off";
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
-function seqHTML(seq){return seq.map((t,i)=>`${i?"<span>›</span>":""}<img src="${waveIcon[t]}" alt="${waveJP[t]}">`).join("")}
+function seqHTML(seq){return seq.map((t,i)=>`${i?"<span>›</span>":""}<img class="comboWave ${t}" src="${waveIcon[t]}" alt="${waveJP[t]}">`).join("")}
 function resize(){const r=game.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;canvas.style.width=r.width+"px";canvas.style.height=r.height+"px";ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);draw()}
 addEventListener("resize",resize);
 function setTheme(){const t=themes[turn]||themes[4];$("turnLabel").textContent=`TURN ${turn+1} / 5`;$("themeName").textContent=t[0];$("themeDesc").textContent=t[1];$("difficulty").textContent=turn===4?"MOVING":"STATIC"}
