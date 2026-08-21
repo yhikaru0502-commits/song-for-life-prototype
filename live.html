@@ -377,6 +377,24 @@ button{font:inherit}
 #dragHint{bottom:143px!important;font-size:7px!important;padding:3px 7px!important;opacity:.78}
 /* keep the entire central interaction field visually clean */
 
+
+/* v21 mobile performance tuning */
+@media (max-width: 700px){
+  .glass,#comboDock{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  .comboWave{
+    filter:none!important;
+  }
+  .recipe.matched .comboWave{
+    filter:brightness(1.08)!important;
+  }
+  .recipe.possible .comboWave{
+    filter:brightness(1.04)!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -613,7 +631,7 @@ function drawLines(temp){
   ctx.strokeStyle="rgba(190,150,255,.28)";
   ctx.lineWidth=15;
   ctx.shadowColor="rgba(180,125,255,.95)";
-  ctx.shadowBlur=24;
+  ctx.shadowBlur=14;
   ctx.stroke();
 
   // bright core
@@ -622,7 +640,7 @@ function drawLines(temp){
   ctx.strokeStyle=grad;
   ctx.lineWidth=4.5;
   ctx.shadowColor="rgba(125,225,255,.95)";
-  ctx.shadowBlur=12;
+  ctx.shadowBlur=7;
   ctx.stroke();
 
   // sparkling particles distributed along the traced route
@@ -630,7 +648,7 @@ function drawLines(temp){
   for(let i=0;i<pts.length-1;i++){
     const a=pts[i],b=pts[i+1];
     const len=Math.hypot(b.x-a.x,b.y-a.y);
-    const count=Math.max(2,Math.floor(len/24));
+    const count=Math.max(1,Math.floor(len/42));
     for(let j=0;j<count;j++){
       const t=(j/count + (now*.045))%1;
       const x=a.x+(b.x-a.x)*t;
@@ -641,7 +659,7 @@ function drawLines(temp){
       ctx.arc(x,y,r,0,Math.PI*2);
       ctx.fillStyle=`rgba(255,255,255,${.55+.4*pulse})`;
       ctx.shadowColor="rgba(220,190,255,1)";
-      ctx.shadowBlur=10;
+      ctx.shadowBlur=5;
       ctx.fill();
     }
   }
@@ -714,8 +732,12 @@ function beginSelection(clientX,clientY){
   if(n)addNode(n);
   drawLines(pos);
 }
+let lastTraceMove=0;
 function moveSelection(clientX,clientY){
   if(!active||!dragging)return;
+  const now=performance.now();
+  if(now-lastTraceMove<32)return;
+  lastTraceMove=now;
   const pos=posFromClient(clientX,clientY);
   const n=hitNode(pos);
   if(n)addNode(n);
@@ -774,9 +796,9 @@ window.addEventListener("mouseup",e=>{
 
 function startTurn(){
   if(active||turn>=6)return;
-  active=true;time=7;drawn=[];
+  active=true;time=10;drawn=[];
   setTheme();spawn();
-  document.getElementById("countdown").textContent="7";
+  document.getElementById("countdown").textContent="10";
 
   timer=setInterval(()=>{
     time-=0.1;
@@ -871,8 +893,15 @@ function finishTurn(){
   }
 }
 
+let lastAnimFrame=0;
 function animateNodes(now){
-  const dt=Math.min(40,now-lastMoveTime);lastMoveTime=now;
+  if(now-lastAnimFrame<32){
+    requestAnimationFrame(animateNodes);
+    return;
+  }
+  const dt=Math.min(48,now-lastMoveTime);
+  lastMoveTime=now;
+  lastAnimFrame=now;
   if(active){
     for(const el of currentNodes){
       if(el.dataset.moving!=="1"||drawn.includes(el))continue;
@@ -883,7 +912,7 @@ function animateNodes(now){
       if(el._py>76){el._py=76;el._vy=-Math.abs(el._vy)}
       el.style.left=el._px+"%";el.style.top=el._py+"%";
     }
-    drawLines();
+    if(dragging) drawLines();
   }
   requestAnimationFrame(animateNodes);
 }
@@ -919,7 +948,7 @@ function resetGame(){
   waveFlash.classList.remove("fire");
   document.getElementById("score").textContent="0";
   document.getElementById("audience").textContent="20%";
-  document.getElementById("countdown").textContent="7";
+  document.getElementById("countdown").textContent="10";
   setTheme();
   setTimeout(preGameCountdown,250);
 }
