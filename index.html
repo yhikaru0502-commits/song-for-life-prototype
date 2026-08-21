@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA ADV v16.1</title>
+<title>HARMONIA ADV v17</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03050a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
@@ -39,22 +39,81 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03050a;col
 #end{display:none;background:rgba(2,4,9,.95)}#end b{font-size:22px;line-height:1.7}
 #tap{position:absolute;inset:0;z-index:40;display:none}
 @media(min-width:700px){#game{box-shadow:0 0 60px rgba(0,0,0,.65)}}
+
+#bgA.cssLobby,#bgB.cssLobby{
+  background-image:
+    linear-gradient(180deg,rgba(9,24,38,.08),rgba(4,8,15,.5)),
+    radial-gradient(circle at 50% 22%,rgba(104,220,255,.23),transparent 26%),
+    linear-gradient(155deg,#20374a 0 32%,#0d1721 33% 52%,#31424b 53% 55%,#111820 56% 100%) !important;
+}
+#bgA.cssBooth,#bgB.cssBooth{
+  background-image:
+    radial-gradient(circle at 50% 38%,rgba(117,225,255,.20),transparent 20%),
+    linear-gradient(90deg,transparent 49%,rgba(111,221,255,.24) 50%,transparent 51%),
+    linear-gradient(180deg,#0b1723,#07101a 45%,#02050a 100%) !important;
+}
+#statsPanel{
+  position:absolute;z-index:14;top:20%;left:8%;right:8%;display:none;
+  padding:14px 16px;border:1px solid rgba(130,225,255,.35);
+  background:rgba(4,10,18,.62);backdrop-filter:blur(10px);border-radius:15px;
+}
+.statRow{display:grid;grid-template-columns:70px 1fr 45px;gap:9px;align-items:center;margin:8px 0;font-size:13px}
+.statBar{height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.statFill{height:100%;background:linear-gradient(90deg,#7ee7ff,#d4a6ff);width:45%}
+.statRow.voice .statFill{width:88%}.statRow.rhythm .statFill{width:34%}.statRow.aura .statFill{width:58%}
+.statRow.emphasis{font-weight:900;text-shadow:0 0 12px rgba(105,225,255,.8)}
+#tutorial{
+ position:absolute;inset:0;z-index:32;display:none;touch-action:none;
+}
+#tutorialHeader{
+ position:absolute;top:14%;left:7%;right:7%;text-align:center;
+ padding:10px 12px;border-radius:12px;background:rgba(2,6,12,.76);
+ border:1px solid rgba(255,255,255,.18);font-size:15px;font-weight:800
+}
+.tnode{
+ position:absolute;width:76px;height:76px;transform:translate(-50%,-50%);
+ border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ border:2px solid rgba(255,255,255,.78);background:radial-gradient(circle,rgba(255,255,255,.24),rgba(5,11,19,.68));
+ font-size:13px;font-weight:900;color:#fff;box-shadow:0 0 22px currentColor;
+ pointer-events:none;
+}
+.tnode.voice{color:#6fe2ff}.tnode.rhythm{color:#ffd16d}.tnode.aura{color:#d29cff}
+.tnode.sel{transform:translate(-50%,-50%) scale(1.14);box-shadow:0 0 35px currentColor,0 0 60px currentColor}
+#tutorialCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#comboOverlay,#liveStartOverlay{
+ position:absolute;inset:0;z-index:35;display:none;align-items:center;justify-content:center;text-align:center;
+ background:radial-gradient(circle at 50% 45%,rgba(114,220,255,.20),rgba(2,5,10,.5));
+}
+#comboOverlay .big,#liveStartOverlay .big{font-size:46px;font-weight:1000;letter-spacing:.06em;text-shadow:0 0 24px rgba(130,225,255,.8)}
+#comboOverlay .route{margin-top:10px;font-size:18px}
+#meterBox{position:absolute;z-index:14;top:16%;right:6%;width:88px;padding:9px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(4,8,15,.6);display:none;text-align:center}
+#meterValue{font-size:25px;font-weight:900}
+
 </style>
 </head>
 <body>
 <div id="game">
   <div id="bgA"></div><div id="bgB"></div><div id="shade"></div>
   <img id="rin" class="character" alt=""><img id="akari" class="character" alt="">
-  <div id="hud"><span id="chapter">第1章　選ばれし者たち</span><span id="num">01 / 40</span></div>
+  <div id="hud"><span id="chapter">第1章　選ばれし者たち</span><span id="num">01 / 60</span></div>
   <div id="center"></div><div id="card"></div>
   <div id="dialog"><div id="name"></div><div id="text"></div><div id="next">▼</div></div>
-  <div id="black"></div><div id="flash"></div>
+  <div id="statsPanel">
+      <div class="statRow voice"><span>声響</span><div class="statBar"><div class="statFill"></div></div><b>S</b></div>
+      <div class="statRow rhythm"><span>律動</span><div class="statBar"><div class="statFill"></div></div><b>C</b></div>
+      <div class="statRow aura"><span>華耀</span><div class="statBar"><div class="statFill"></div></div><b>B</b></div>
+    </div>
+    <div id="meterBox"><small>声響値</small><div id="meterValue">0</div></div>
+    <div id="tutorial"><canvas id="tutorialCanvas"></canvas><div id="tutorialHeader"></div></div>
+    <div id="comboOverlay"><div><div class="big" id="comboName"></div><div class="route" id="comboRoute"></div></div></div>
+    <div id="liveStartOverlay"><div class="big">LIVE START</div></div>
+    <div id="black"></div><div id="flash"></div>
   <div id="title"><div><h1>HARMONIA</h1><p>歌姫候補生・第一次選抜</p><span class="btn">TAP TO START</span></div></div>
   <div id="end"><div><small>HARMONIA PROJECT</small><br><br><b>《ハーモニア計画》<br>第一次選抜会場</b><br><br><small>TO BE CONTINUED</small></div></div>
   <div id="tap"></div>
 </div>
 <script>
-const scenes=[{"n": 1, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "かつて人類は、世界から“光”を失った。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 2, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "化石燃料の枯渇。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 3, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "人類は太陽光による、新たなエネルギー時代へ進もうとしていた。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 4, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "だが、その技術を巡って――《エネルギー戦争》が勃発。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 5, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "世界中の巨大ソーラー施設が破壊され、人類は深刻なエネルギー危機に陥った。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 6, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "そんな暗闇の中。日本で、未知のエネルギーが発見される。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 7, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "人間が歌う時にだけ生まれる、光を伴う生命振動。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 8, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "――《存在波（エグジスタンス・ウェーブ）》", "mode": "center", "bg": "assets/bg/bg_dark_city.png", "term": true}, {"n": 9, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "そして、誰よりも強い存在波を放つ一人の少女が現れた。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 10, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "彼女が歌った時、停止していた巨大構造物《陽傘》が、再び動き出した。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 11, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "失われていた空が、都市に戻った。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 12, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "人々は彼女を――《歌姫（DIVA）》と呼んだ。", "mode": "center", "bg": "assets/bg/bg_dark_city.png", "term": true}, {"n": 13, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "そして今。世界は、新たな歌姫を探している。", "mode": "center", "bg": "assets/bg/bg_dark_city.png", "card": "《ハーモニア計画／第一次選抜》", "transition": "black_hold"}, {"n": 14, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "家族を失った。", "mode": "center", "bg": "assets/event/ev_01.png"}, {"n": 15, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "世界を恨んだ。", "mode": "center", "bg": "assets/event/ev_01.png"}, {"n": 16, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "だから私は、歌った。", "mode": "center", "bg": "assets/event/ev_01.png"}, {"n": 17, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "この世界に――復讐するために。", "mode": "center", "bg": "assets/event/ev_02.png", "flash": true}, {"n": 18, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "存在波を放つことができれば、私は力を手に入れられる。", "mode": "dialog", "bg": "assets/event/ev_03.png"}, {"n": 19, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "そのために歌ってきた。", "mode": "dialog", "bg": "assets/event/ev_03.png"}, {"n": 20, "section": "凛：過去と現在", "speaker": "凛", "text": "ずっと、一人で。", "mode": "dialog", "bg": "assets/event/ev_03.png", "transition": "black_hold"}, {"n": 21, "section": "光と影の邂逅", "speaker": "灯", "text": "ねえ！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": null, "akariOff": true}, {"n": 22, "section": "光と影の邂逅", "speaker": "灯", "text": "あなたも、オーディション受けに来たの？", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 23, "section": "光と影の邂逅", "speaker": "凛", "text": "……そうだけど", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 24, "section": "光と影の邂逅", "speaker": "灯", "text": "やっぱり！　私も！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 25, "section": "光と影の邂逅", "speaker": "灯", "text": "私ね、DIVAに救ってもらったんだ", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 26, "section": "光と影の邂逅", "speaker": "灯", "text": "だから今度は、私がDIVAになって――", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 27, "section": "光と影の邂逅", "speaker": "灯", "text": "みんなを救いたいの！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "akari"}, {"n": 28, "section": "光と影の邂逅", "speaker": "凛", "text": "…………", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "rin"}, {"n": 29, "section": "光と影の邂逅", "speaker": "凛", "text": "そう。頑張って", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 30, "section": "光と影の邂逅", "speaker": "凛", "text": "それじゃ", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 31, "section": "光と影の邂逅", "speaker": "灯", "text": "えっ、ちょっと待って！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 32, "section": "光と影の邂逅", "speaker": "灯", "text": "せっかく同じオーディション受けるんだから、一緒に行こうよ！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 33, "section": "光と影の邂逅", "speaker": "凛", "text": "……なんで？", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "rin"}, {"n": 34, "section": "光と影の邂逅", "speaker": "灯", "text": "なんでって……", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "akari"}, {"n": 35, "section": "光と影の邂逅", "speaker": "灯", "text": "同じところ行くんだから、その方が楽しいじゃん！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "akari"}, {"n": 36, "section": "光と影の邂逅", "speaker": "凛", "text": "…………", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "rin"}, {"n": 37, "section": "光と影の邂逅", "speaker": "凛", "text": "……勝手にすれば", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 38, "section": "光と影の邂逅", "speaker": "灯", "text": "うん。じゃあ勝手についてく！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 39, "section": "第一次選抜へ", "speaker": "凛（モノローグ）", "text": "変なやつ。", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "fallback": true}, {"n": 40, "section": "第一次選抜へ", "speaker": "凛（モノローグ）", "text": "世界を、救う――か。", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "fallback": true}];
+const scenes=[{"n": 1, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "かつて人類は、世界から“光”を失った。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 2, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "化石燃料の枯渇。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 3, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "人類は太陽光による、新たなエネルギー時代へ進もうとしていた。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 4, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "だが、その技術を巡って――《エネルギー戦争》が勃発。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 5, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "世界中の巨大ソーラー施設が破壊され、人類は深刻なエネルギー危機に陥った。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 6, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "そんな暗闇の中。日本で、未知のエネルギーが発見される。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 7, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "人間が歌う時にだけ生まれる、光を伴う生命振動。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 8, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "――《存在波（エグジスタンス・ウェーブ）》", "mode": "center", "bg": "assets/bg/bg_dark_city.png", "term": true}, {"n": 9, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "そして、誰よりも強い存在波を放つ一人の少女が現れた。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 10, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "彼女が歌った時、停止していた巨大構造物《陽傘》が、再び動き出した。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 11, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "失われていた空が、都市に戻った。", "mode": "center", "bg": "assets/bg/bg_dark_city.png"}, {"n": 12, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "人々は彼女を――《歌姫（DIVA）》と呼んだ。", "mode": "center", "bg": "assets/bg/bg_dark_city.png", "term": true}, {"n": 13, "section": "世界観プロローグ", "speaker": "ナレーション", "text": "そして今。世界は、新たな歌姫を探している。", "mode": "center", "bg": "assets/bg/bg_dark_city.png", "card": "《ハーモニア計画／第一次選抜》", "transition": "black_hold"}, {"n": 14, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "家族を失った。", "mode": "center", "bg": "assets/event/ev_01.png"}, {"n": 15, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "世界を恨んだ。", "mode": "center", "bg": "assets/event/ev_01.png"}, {"n": 16, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "だから私は、歌った。", "mode": "center", "bg": "assets/event/ev_01.png"}, {"n": 17, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "この世界に――復讐するために。", "mode": "center", "bg": "assets/event/ev_02.png", "flash": true}, {"n": 18, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "存在波を放つことができれば、私は力を手に入れられる。", "mode": "dialog", "bg": "assets/event/ev_03.png"}, {"n": 19, "section": "凛：過去と現在", "speaker": "凛（モノローグ）", "text": "そのために歌ってきた。", "mode": "dialog", "bg": "assets/event/ev_03.png"}, {"n": 20, "section": "凛：過去と現在", "speaker": "凛", "text": "ずっと、一人で。", "mode": "dialog", "bg": "assets/event/ev_03.png", "transition": "black_hold"}, {"n": 21, "section": "光と影の邂逅", "speaker": "灯", "text": "ねえ！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": null, "akariOff": true}, {"n": 22, "section": "光と影の邂逅", "speaker": "灯", "text": "あなたも、オーディション受けに来たの？", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 23, "section": "光と影の邂逅", "speaker": "凛", "text": "……そうだけど", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 24, "section": "光と影の邂逅", "speaker": "灯", "text": "やっぱり！　私も！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 25, "section": "光と影の邂逅", "speaker": "灯", "text": "私ね、DIVAに救ってもらったんだ", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 26, "section": "光と影の邂逅", "speaker": "灯", "text": "だから今度は、私がDIVAになって――", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 27, "section": "光と影の邂逅", "speaker": "灯", "text": "みんなを救いたいの！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "akari"}, {"n": 28, "section": "光と影の邂逅", "speaker": "凛", "text": "…………", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "rin"}, {"n": 29, "section": "光と影の邂逅", "speaker": "凛", "text": "そう。頑張って", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 30, "section": "光と影の邂逅", "speaker": "凛", "text": "それじゃ", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 31, "section": "光と影の邂逅", "speaker": "灯", "text": "えっ、ちょっと待って！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 32, "section": "光と影の邂逅", "speaker": "灯", "text": "せっかく同じオーディション受けるんだから、一緒に行こうよ！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 33, "section": "光と影の邂逅", "speaker": "凛", "text": "……なんで？", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "rin"}, {"n": 34, "section": "光と影の邂逅", "speaker": "灯", "text": "なんでって……", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "akari"}, {"n": 35, "section": "光と影の邂逅", "speaker": "灯", "text": "同じところ行くんだから、その方が楽しいじゃん！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "akari"}, {"n": 36, "section": "光と影の邂逅", "speaker": "凛", "text": "…………", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "rin"}, {"n": 37, "section": "光と影の邂逅", "speaker": "凛", "text": "……勝手にすれば", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 38, "section": "光と影の邂逅", "speaker": "灯", "text": "うん。じゃあ勝手についてく！", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 39, "section": "第一次選抜へ", "speaker": "凛（モノローグ）", "text": "変なやつ。", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "fallback": true}, {"n": 40, "section": "第一次選抜へ", "speaker": "凛（モノローグ）", "text": "世界を、救う――か。", "mode": "dialog", "bg": "assets/bg/bg_dark_road.png", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "fallback": true}, {"n": 41, "section": "第一次選抜会場", "speaker": "灯", "text": "わぁ……すごい人", "mode": "dialog", "bg": "css:lobby", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 42, "section": "第一次選抜会場", "speaker": "凛", "text": "…………", "mode": "dialog", "bg": "css:lobby", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png"}, {"n": 43, "section": "第一次選抜会場", "speaker": "場内アナウンス", "text": "これより《ハーモニア計画・第一次選抜》を開始します", "mode": "dialog", "bg": "css:lobby", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "card": "HARMONIA / FIRST AUDITION"}, {"n": 44, "section": "第一次選抜会場", "speaker": "場内アナウンス", "text": "第一次選抜では、歌唱によって発生する《存在波》を測定します", "mode": "dialog", "bg": "css:lobby", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "card": "EXISTENCE WAVE MEASUREMENT"}, {"n": 45, "section": "第一次選抜会場", "speaker": "灯", "text": "緊張してきた……", "mode": "dialog", "bg": "css:lobby", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "akari"}, {"n": 46, "section": "第一次選抜会場", "speaker": "凛", "text": "歌うだけでしょ", "mode": "dialog", "bg": "css:lobby", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "focus": "rin"}, {"n": 47, "section": "第一次選抜会場", "speaker": "場内アナウンス", "text": "《エントリーNo.017　凛》\n測定ブースへ入室してください", "mode": "dialog", "bg": "css:lobby", "rin": "assets/rin/rin_01.png", "akari": "assets/akari/akari_01.png", "transition": "black_hold"}, {"n": 48, "section": "存在波測定", "speaker": "凛（モノローグ）", "text": "…………", "mode": "dialog", "bg": "css:booth", "rin": "assets/rin/rin_01.png"}, {"n": 49, "section": "存在波測定", "speaker": "試験官", "text": "凛さんですね", "mode": "dialog", "bg": "css:booth", "rin": "assets/rin/rin_01.png"}, {"n": 50, "section": "存在波測定", "speaker": "試験官", "text": "これから、あなたの歌唱によって発生する存在波を測定します", "mode": "dialog", "bg": "css:booth", "rin": "assets/rin/rin_01.png", "card": "EXISTENCE WAVE"}, {"n": 51, "section": "存在波測定", "speaker": "試験官", "text": "存在波は、主に三つの性質として観測されます", "mode": "dialog", "bg": "css:booth", "rin": "assets/rin/rin_01.png", "stats": true}, {"n": 52, "section": "存在波測定", "speaker": "試験官", "text": "歌声から生じる――《声響》", "mode": "dialog", "bg": "css:booth", "rin": "assets/rin/rin_01.png", "stats": true, "voiceEmphasis": true}, {"n": 53, "section": "TUTORIAL 01", "speaker": "システム", "text": "《声響》を2つ、指でなぞってください", "mode": "tutorial1", "bg": "css:booth", "rin": "assets/rin/rin_01.png"}, {"n": 54, "section": "TUTORIAL 01", "speaker": "システム", "text": "SHOUT", "mode": "combo", "bg": "css:booth", "rin": "assets/rin/rin_01.png", "combo": "SHOUT", "route": "声 → 声"}, {"n": 55, "section": "存在波測定", "speaker": "試験官", "text": "……出力上昇", "mode": "dialog", "bg": "css:booth", "rin": "assets/rin/rin_01.png", "meter": 35}, {"n": 56, "section": "TUTORIAL 02", "speaker": "システム", "text": "《SCREAM》を発動してください", "mode": "tutorial2", "bg": "css:booth", "rin": "assets/rin/rin_01.png"}, {"n": 57, "section": "TUTORIAL 02", "speaker": "システム", "text": "SCREAM", "mode": "combo", "bg": "css:booth", "rin": "assets/rin/rin_01.png", "combo": "SCREAM", "route": "声 → 声 → 声"}, {"n": 58, "section": "存在波測定", "speaker": "試験官", "text": "声響値……まだ上がる？", "mode": "dialog", "bg": "css:booth", "rin": "assets/rin/rin_01.png", "meter": 72}, {"n": 59, "section": "存在波測定", "speaker": "凛", "text": "……こんなものじゃない", "mode": "dialog", "bg": "css:booth", "rin": "assets/rin/rin_01.png", "focus": "rin", "meter": 92}, {"n": 60, "section": "LIVE START", "speaker": "システム", "text": "LIVE START", "mode": "liveStart", "bg": "css:booth", "rin": "assets/rin/rin_01.png"}];
 let idx=-1,started=false,busy=false,bgFront="A";
 const q=id=>document.getElementById(id);
 const bgA=q("bgA"),bgB=q("bgB"),rin=q("rin"),akari=q("akari"),center=q("center"),dialog=q("dialog"),black=q("black"),flash=q("flash");
@@ -62,7 +121,10 @@ const bgA=q("bgA"),bgB=q("bgB"),rin=q("rin"),akari=q("akari"),center=q("center")
 function setBg(url, instant=false){
   const front=bgFront==="A"?bgA:bgB, back=bgFront==="A"?bgB:bgA;
   if(front.dataset.src===url) return;
-  back.style.backgroundImage=`url("${url}")`;
+  back.classList.remove("cssLobby","cssBooth");
+  if(url==="css:lobby"){ back.style.backgroundImage=""; back.classList.add("cssLobby"); }
+  else if(url==="css:booth"){ back.style.backgroundImage=""; back.classList.add("cssBooth"); }
+  else { back.style.backgroundImage=`url("${url}")`; }
   back.dataset.src=url;
   if(instant){front.style.opacity=0;back.style.opacity=1;bgFront=bgFront==="A"?"B":"A";return}
   back.style.opacity=1; front.style.opacity=0; bgFront=bgFront==="A"?"B":"A";
@@ -77,7 +139,7 @@ function setCharacters(s){
 }
 
 function render(s, instant=false){
-  q("num").textContent=String(s.n).padStart(2,"0")+" / 40";
+  q("num").textContent=String(s.n).padStart(2,"0")+" / 60";
   q("chapter").textContent="第1章　"+s.section;
   setBg(s.bg,instant);setCharacters(s);
   center.style.display=s.mode==="center"?"block":"none";
@@ -88,8 +150,100 @@ function render(s, instant=false){
   q("text").textContent=s.text;
   q("card").style.display=s.card?"block":"none";
   q("card").textContent=s.card||"";
+
+  q("statsPanel").style.display=s.stats?"block":"none";
+  document.querySelectorAll(".statRow").forEach(x=>x.classList.remove("emphasis"));
+  if(s.voiceEmphasis) document.querySelector(".statRow.voice").classList.add("emphasis");
+
+  q("meterBox").style.display=s.meter!=null?"block":"none";
+  if(s.meter!=null) q("meterValue").textContent=s.meter;
+
+  q("tutorial").style.display="none";
+  q("comboOverlay").style.display="none";
+  q("liveStartOverlay").style.display="none";
+
+  if(s.mode==="tutorial1"||s.mode==="tutorial2") startTutorial(s.mode);
+  if(s.mode==="combo"){
+    q("comboName").textContent=s.combo;
+    q("comboRoute").textContent=s.route;
+    q("comboOverlay").style.display="flex";
+  }
+  if(s.mode==="liveStart"){
+    q("liveStartOverlay").style.display="flex";
+    setTimeout(()=>{ window.location.href="live.html?v=17"; },900);
+  }
   if(s.flash){flash.classList.remove("fire");void flash.offsetWidth;flash.classList.add("fire")}
 }
+
+
+let tutNodes=[],tutSelected=[],tutDragging=false,tutMode="",tutCtx=null,tutCanvas=null;
+
+function setupTutorialCanvas(){
+  tutCanvas=q("tutorialCanvas");tutCtx=tutCanvas.getContext("2d");
+  const r=q("game").getBoundingClientRect();
+  tutCanvas.width=r.width*devicePixelRatio;tutCanvas.height=r.height*devicePixelRatio;
+  tutCanvas.style.width=r.width+"px";tutCanvas.style.height=r.height+"px";
+  tutCtx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+function startTutorial(mode){
+  tutMode=mode;tutSelected=[];tutDragging=false;
+  const layer=q("tutorial");layer.style.display="block";
+  [...layer.querySelectorAll(".tnode")].forEach(n=>n.remove());
+  q("tutorialHeader").textContent=mode==="tutorial1" ? "《声響》を2つ、指でなぞれ" : "《SCREAM》　声 → 声 → 声";
+  const defs= mode==="tutorial1"
+    ? [["voice",27,43],["voice",62,34],["voice",72,62],["voice",35,69]]
+    : [["voice",20,41],["rhythm",48,31],["voice",73,42],["aura",35,68],["voice",69,70]];
+  defs.forEach((d,i)=>{
+    const n=document.createElement("div");n.className="tnode "+d[0];n.dataset.type=d[0];
+    n.style.left=d[1]+"%";n.style.top=d[2]+"%";
+    n.innerHTML=d[0]==="voice"?"声響":d[0]==="rhythm"?"律動":"華耀";
+    layer.appendChild(n);tutNodes.push(n);
+  });
+  setupTutorialCanvas();drawTutorialLine();
+}
+function tutPos(cx,cy){const r=q("game").getBoundingClientRect();return{x:cx-r.left,y:cy-r.top}}
+function tutCenter(el){const g=q("game").getBoundingClientRect(),r=el.getBoundingClientRect();return{x:r.left-g.left+r.width/2,y:r.top-g.top+r.height/2}}
+function tutHit(p){
+  return tutNodes.find(n=>{const c=tutCenter(n);return Math.hypot(p.x-c.x,p.y-c.y)<46});
+}
+function tutAdd(n){
+  if(!n||tutSelected.includes(n))return;
+  tutSelected.push(n);n.classList.add("sel");drawTutorialLine();
+}
+function drawTutorialLine(temp){
+  if(!tutCtx)return;
+  const r=q("game").getBoundingClientRect();tutCtx.clearRect(0,0,r.width,r.height);
+  if(!tutSelected.length)return;
+  const pts=tutSelected.map(tutCenter);if(temp)pts.push(temp);
+  tutCtx.save();tutCtx.lineCap="round";tutCtx.lineJoin="round";
+  tutCtx.strokeStyle="rgba(115,225,255,.28)";tutCtx.lineWidth=15;tutCtx.shadowColor="#b996ff";tutCtx.shadowBlur=22;
+  tutCtx.beginPath();pts.forEach((p,i)=>i?tutCtx.lineTo(p.x,p.y):tutCtx.moveTo(p.x,p.y));tutCtx.stroke();
+  tutCtx.strokeStyle="#e9fbff";tutCtx.lineWidth=4;tutCtx.shadowBlur=12;
+  tutCtx.beginPath();pts.forEach((p,i)=>i?tutCtx.lineTo(p.x,p.y):tutCtx.moveTo(p.x,p.y));tutCtx.stroke();tutCtx.restore();
+}
+function tutorialSuccess(){
+  const types=tutSelected.map(n=>n.dataset.type);
+  const ok=tutMode==="tutorial1"
+    ? types.length>=2 && types[0]==="voice" && types[1]==="voice"
+    : types.length>=3 && types[0]==="voice" && types[1]==="voice" && types[2]==="voice";
+  if(ok){
+    q("tutorial").style.display="none";
+    idx++; render(scenes[idx]);
+  }else{
+    tutSelected.forEach(n=>n.classList.remove("sel"));tutSelected=[];drawTutorialLine();
+    q("tutorialHeader").textContent="もう一度。正しい順番でなぞしてください";
+  }
+}
+const tutLayer=q("tutorial");
+tutLayer.addEventListener("pointerdown",e=>{
+  if(!tutMode)return;e.preventDefault();tutDragging=true;tutAdd(tutHit(tutPos(e.clientX,e.clientY)));
+});
+window.addEventListener("pointermove",e=>{
+  if(!tutDragging)return;e.preventDefault();const p=tutPos(e.clientX,e.clientY);tutAdd(tutHit(p));drawTutorialLine(p);
+},{passive:false});
+window.addEventListener("pointerup",e=>{
+  if(!tutDragging)return;e.preventDefault();tutDragging=false;drawTutorialLine();tutorialSuccess();
+},{passive:false});
 
 function blackTransition(nextScene){
   busy=true;black.style.opacity=1;
@@ -108,7 +262,7 @@ function startGame(){
 }
 
 function advance(){
-  if(busy||!started)return;
+  if(busy||!started||q("tutorial").style.display==="block")return;
   if(idx>=scenes.length-1){
     q("end").style.display="flex";
     return;
