@@ -324,7 +324,7 @@ button{font:inherit}
 }
 #noComboOverlay div{padding:10px 18px;border-radius:999px;background:rgba(3,6,13,.68);font-weight:900}
 #finalScoreOverlay{pointer-events:auto!important}
-#retryLive{
+#retryLive,#continueAdv{
   margin-top:22px;border:1px solid rgba(255,255,255,.35);border-radius:999px;
   background:rgba(255,255,255,.08);color:#fff;padding:11px 24px;font-weight:900
 }
@@ -902,7 +902,7 @@ button{font:inherit}
       <div id="finalScoreInner">
         <div id="finalScoreLabel">FINAL SCORE</div>
         <div id="finalScoreValue">0</div>
-        <div id="finalScoreSub">LIVE CLEAR</div><button id="retryLive" type="button">RETRY LIVE</button>
+        <div id="finalScoreSub">LIVE CLEAR</div><button id="continueAdv" type="button">CONTINUE</button><button id="retryLive" type="button">RETRY LIVE</button>
       </div>
     </div>
   </div>
@@ -975,7 +975,7 @@ function story(){const s=[["試験官","……凄まじい歌力だ！"],["試�
 function pre(cb){const o=$("preCountdown"),s=["3","2","1","LIVE START!"];let i=0;o.style.display="flex";o.textContent=s[0];const iv=setInterval(()=>{i++;if(i>=s.length){clearInterval(iv);o.style.display="none";cb()}else o.textContent=s[i]},520)}
 let la=0;function anim(now){if(now-la>32){la=now;if(active){currentNodes.forEach(e=>{if(e.dataset.moving!=="1"||drawn.includes(e))return;e._px+=e._vx*32;e._py+=e._vy*32;if(e._px<10||e._px>90)e._vx*=-1;if(e._py<13||e._py>74)e._vy*=-1;e.style.left=e._px+"%";e.style.top=e._py+"%"});if(dragging)draw()}}requestAnimationFrame(anim)}requestAnimationFrame(anim);
 function reset(){clearInterval(timer);timer=null;turn=0;score=0;audience=20;active=false;resolved=false;drawn=[];$("score").textContent="0";$("audience").textContent="20%";$("finalScoreOverlay").style.display="none";$("handOverlay").style.display="none";$("comboDock").classList.remove("selecting");tutorial?setTimeout(()=>openTurn(true),200):setTimeout(()=>pre(()=>openTurn(false)),200)}
-$("resetBtn").onclick=reset;$("retryLive").onclick=()=>{tutorial=false;reset()};[1,2,3,4].forEach(i=>{const im=new Image();im.src=`cutin_${i}.png`});reset();
+$("resetBtn").onclick=reset;$("retryLive").onclick=()=>{tutorial=false;reset()};$("continueAdv").onclick=()=>{window.location.href="adv_after.html"};[1,2,3,4].forEach(i=>{const im=new Image();im.src=`cutin_${i}.png`});reset();
 
 </script>
 </body>
