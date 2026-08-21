@@ -225,7 +225,7 @@ function render(s, instant=false){
   if(s.mode==="liveStart"){
     q("liveStartText").textContent="TUTORIAL START";
     q("liveStartOverlay").style.display="flex";
-    setTimeout(()=>{ window.location.href="live.html?tutorial=1&v=24"; },900);
+    setTimeout(()=>{ window.location.href="live.html?tutorial=1&v=251"; },900);
   }
   if(s.flash){flash.classList.remove("fire");void flash.offsetWidth;flash.classList.add("fire")}
 }
@@ -346,8 +346,8 @@ q("debugClose").addEventListener("click",()=>q("debugMenu").style.display="none"
 document.querySelectorAll("[data-tap]").forEach(btn=>{
   btn.addEventListener("click",()=>jumpToTap(Number(btn.dataset.tap)));
 });
-q("debugTutorial").addEventListener("click",()=>{window.location.href="live.html?tutorial=1&v=24";});
-q("debugLive").addEventListener("click",()=>{window.location.href="live.html?v=24";});
+q("debugTutorial").addEventListener("click",()=>{window.location.href="live.html?tutorial=1&v=251";});
+q("debugLive").addEventListener("click",()=>{window.location.href="live.html?v=251";});
 
 q("title").addEventListener("click",startGame);
 q("title").addEventListener("touchend",e=>{

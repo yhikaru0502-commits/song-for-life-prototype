@@ -5,29 +5,24 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>SONG FOR LIFE / PROLOGUE</title>
+<title>SONG FOR LIFE / AFTER LIVE</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
 #game{position:relative;width:100%;height:100%;max-width:430px;margin:auto;overflow:hidden;background:#03050a;user-select:none}
-#bg{position:absolute;inset:0;background:
- radial-gradient(circle at 50% 34%,rgba(100,155,190,.18),transparent 27%),
- linear-gradient(180deg,#101b27 0%,#08101a 46%,#02050a 100%);transition:opacity .6s}
-#bg.result{background:
- radial-gradient(circle at 50% 22%,rgba(105,210,255,.20),transparent 27%),
- linear-gradient(155deg,#203747 0 31%,#0c1620 32% 53%,#273944 54% 56%,#0c131b 57% 100%)}
-#shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.04) 50%,rgba(0,0,0,.63));z-index:2}
-.char{position:absolute;z-index:5;bottom:-2%;height:88%;width:92%;object-fit:contain;object-position:center bottom;opacity:0;transition:opacity .55s ease,transform .55s ease,filter .3s;filter:drop-shadow(0 14px 30px rgba(0,0,0,.8));pointer-events:none}
+#bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,rgba(90,145,185,.22),transparent 28%),linear-gradient(180deg,#121d29,#070d15 55%,#020408);z-index:0}
+#bg.result{background:radial-gradient(circle at 50% 20%,rgba(110,205,255,.18),transparent 26%),linear-gradient(155deg,#1a2c3a,#09111a 60%,#03060b)}
+#shade{position:absolute;inset:0;z-index:2;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.03) 48%,rgba(0,0,0,.68))}
+.char{position:absolute;z-index:5;bottom:-1%;height:88%;width:92%;object-fit:contain;object-position:center bottom;opacity:0;transition:opacity .65s ease,filter .25s;filter:drop-shadow(0 16px 34px rgba(0,0,0,.85));pointer-events:none}
 .char.show{opacity:1}
-#mina{left:4%;transform:scale(1.05);transform-origin:center bottom}
+.char.dim{filter:brightness(.48) drop-shadow(0 16px 34px rgba(0,0,0,.85));opacity:.6}
+#mina{left:4%;height:91%;width:92%}
 #rin{left:-19%;width:72%;height:81%}
 #akari{right:-19%;width:72%;height:81%}
-.char.dim{filter:brightness(.52) drop-shadow(0 14px 30px rgba(0,0,0,.8));opacity:.65}
-#hud{position:absolute;z-index:20;top:max(12px,env(safe-area-inset-top));left:14px;font-size:10px;letter-spacing:.13em;color:rgba(255,255,255,.55)}
-#dialog{position:absolute;z-index:15;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom));min-height:158px;padding:25px 18px 29px;border:1px solid rgba(255,255,255,.18);border-radius:18px;background:linear-gradient(145deg,rgba(4,8,16,.88),rgba(15,18,29,.76));backdrop-filter:blur(13px);box-shadow:0 14px 40px rgba(0,0,0,.46)}
+#dialog{position:absolute;z-index:16;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom));min-height:158px;padding:25px 18px 29px;border:1px solid rgba(255,255,255,.18);border-radius:18px;background:linear-gradient(145deg,rgba(4,8,16,.91),rgba(15,18,29,.78));backdrop-filter:blur(12px);box-shadow:0 14px 40px rgba(0,0,0,.48)}
 #name{position:absolute;top:-16px;left:15px;padding:6px 17px;border-radius:999px;background:#f2f3f5;color:#101116;font-size:14px;font-weight:900;min-width:64px;text-align:center}
-#text{font-size:19px;font-weight:680;line-height:1.68;white-space:pre-line;text-shadow:0 2px 9px #000}
-#next{position:absolute;right:15px;bottom:9px;font-size:11px;opacity:.7;animation:pulse 1s infinite}@keyframes pulse{50%{transform:translateY(3px);opacity:.25}}
+#text{font-size:19px;font-weight:680;line-height:1.7;white-space:pre-line;text-shadow:0 2px 9px #000}
+#next{position:absolute;right:15px;bottom:9px;font-size:11px;opacity:.65;animation:pulse 1s infinite}@keyframes pulse{50%{transform:translateY(3px);opacity:.25}}
 #black{position:absolute;inset:0;z-index:50;background:#000;opacity:1;transition:opacity .75s ease;pointer-events:none}
 #center{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;text-align:center;padding:28px;background:rgba(0,0,0,.76);font-size:20px;font-weight:900;line-height:1.8;letter-spacing:.05em}
 #center .small{font-size:11px;letter-spacing:.18em;opacity:.6;margin-bottom:12px}
@@ -44,7 +39,6 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:
  <img id="mina" class="char" src="assets/mina/mina_02.png">
  <img id="rin" class="char" src="assets/rin/rin_01.png">
  <img id="akari" class="char" src="assets/akari/akari_01.png">
- <div id="hud">HARMONIA / FIRST AUDITION</div>
  <div id="dialog"><div id="name"></div><div id="text"></div><div id="next">TAP ▾</div></div>
  <div id="center"></div>
  <div id="black"></div>
@@ -52,31 +46,30 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:
  <div id="tap"></div>
 </div>
 <script>
-const q=id=>document.getElementById(id), mina=q("mina"),rin=q("rin"),akari=q("akari"),bg=q("bg"),dialog=q("dialog"),black=q("black"),center=q("center");
+const q=id=>document.getElementById(id),mina=q("mina"),rin=q("rin"),akari=q("akari"),bg=q("bg"),dialog=q("dialog"),black=q("black"),center=q("center");
 const scenes=[
  {sp:"凛",tx:"……私に、世界と戦える力は、ある？",black:true},
  {sp:"？？？",tx:"ええ",black:true},
- {sp:"Mina",tx:"あなたなら、抗えるわ",mina:true,reveal:true},
+ {sp:"Mina",tx:"あなたなら、抗えるわ",mina:true},
  {sp:"Mina",tx:"この世界と",mina:true},
  {sp:"凛",tx:"……そう",mina:true},
  {sp:"凛",tx:"なら、それでいい",mina:true},
- {card:"《 第一次選抜　通過 》\\n\\nハーモニア計画・歌姫候補生\\n凛",result:true},
+ {card:"《 第一次選抜　通過 》\\n\\nハーモニア計画・歌姫候補生\\n凛"},
  {sp:"灯",tx:"凛！",pair:true},
  {sp:"灯",tx:"あなたも選ばれたのね！",pair:true},
  {sp:"灯",tx:"一緒に、世界を救おう！",pair:true,focus:"akari"},
- {sp:"凛",tx:"…………",pair:true,focus:"rin"},
  {sp:"凛",tx:"……救う？",pair:true,focus:"rin"},
  {sp:"凛",tx:"私は、この世界に抗うんだ",pair:true,focus:"rin"},
  {end:true}
 ];
-let i=0, locked=true;
-function charsOff(){mina.classList.remove("show","dim");rin.classList.remove("show","dim");akari.classList.remove("show","dim")}
+let i=0,locked=true;
+function hideAll(){mina.classList.remove("show","dim");rin.classList.remove("show","dim");akari.classList.remove("show","dim")}
 function render(){
- const s=scenes[i]; center.style.display="none"; dialog.style.display="none";
- if(s.end){black.style.opacity=1;setTimeout(()=>{q("end").style.display="flex"},650);return}
- if(s.card){charsOff();bg.classList.add("result");center.innerHTML='<div><div class="small">FIRST AUDITION RESULT</div>'+s.card.replace(/\\n/g,"<br>")+'</div>';center.style.display="flex";return}
- if(s.black){charsOff();black.style.opacity=1}
- else {
+ const s=scenes[i];center.style.display="none";dialog.style.display="none";
+ if(s.end){black.style.opacity=1;setTimeout(()=>q("end").style.display="flex",700);return}
+ if(s.card){hideAll();black.style.opacity=0;bg.classList.add("result");center.innerHTML='<div><div class="small">FIRST AUDITION RESULT</div>'+s.card.replace(/\\n/g,"<br>")+'</div>';center.style.display="flex";return}
+ if(s.black){hideAll();black.style.opacity=1}
+ else{
    black.style.opacity=0;
    if(s.mina){rin.classList.remove("show");akari.classList.remove("show");mina.classList.add("show")}
    if(s.pair){mina.classList.remove("show");rin.classList.add("show");akari.classList.add("show");bg.classList.add("result")}
@@ -84,11 +77,10 @@ function render(){
  q("name").textContent=s.sp||"";q("text").textContent=s.tx||"";dialog.style.display="block";
  if(s.focus==="rin"){rin.classList.remove("dim");akari.classList.add("dim")}
  else if(s.focus==="akari"){akari.classList.remove("dim");rin.classList.add("dim")}
- else {rin.classList.remove("dim");akari.classList.remove("dim")}
+ else{rin.classList.remove("dim");akari.classList.remove("dim")}
 }
-function next(){if(locked)return;i++;if(i>=scenes.length)i=scenes.length-1;render()}
+function next(){if(locked)return;i=Math.min(i+1,scenes.length-1);render()}
 q("tap").addEventListener("click",next);
-render();
-setTimeout(()=>{locked=false;},850);
+render();setTimeout(()=>locked=false,850);
 </script>
 </body></html>

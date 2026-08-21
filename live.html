@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA LIVE v24.7 SOUND FEEL</title>
+<title>HARMONIA LIVE v25.1</title>
 <style>
 :root {
   --glass:rgba(8,12,24,.48);
@@ -324,7 +324,7 @@ button{font:inherit}
 }
 #noComboOverlay div{padding:10px 18px;border-radius:999px;background:rgba(3,6,13,.68);font-weight:900}
 #finalScoreOverlay{pointer-events:auto!important}
-#retryLive,#continueAdv{
+#retryLive{
   margin-top:22px;border:1px solid rgba(255,255,255,.35);border-radius:999px;
   background:rgba(255,255,255,.08);color:#fff;padding:11px 24px;font-weight:900
 }
@@ -791,6 +791,9 @@ button{font:inherit}
   100%{transform:translate(-50%,-50%) scale(1.025);filter:brightness(1.08)}
 }
 
+
+#postLiveFade{position:absolute;inset:0;z-index:120;background:#000;opacity:0;pointer-events:none;transition:opacity .75s ease}
+#retryLive{display:none!important}
 </style>
 </head>
 <body>
@@ -898,11 +901,12 @@ button{font:inherit}
       </div>
     </div>
 
+    <div id="postLiveFade"></div>
     <div id="finalScoreOverlay" class="centerOverlay">
       <div id="finalScoreInner">
         <div id="finalScoreLabel">FINAL SCORE</div>
         <div id="finalScoreValue">0</div>
-        <div id="finalScoreSub">LIVE CLEAR</div><button id="continueAdv" type="button">CONTINUE</button><button id="retryLive" type="button">RETRY LIVE</button>
+        <div id="finalScoreSub">LIVE CLEAR</div><button id="retryLive" type="button">RETRY LIVE</button>
       </div>
     </div>
   </div>
@@ -932,27 +936,17 @@ const themes=[["声響増幅","盤面を読み、最適な4枚を選べ"],["律�
 const $=id=>document.getElementById(id),game=$("game"),nodeLayer=$("nodeLayer"),canvas=$("lineLayer"),ctx=canvas.getContext("2d"),touchSurface=$("touchSurface");
 let turn=0,score=0,audience=20,time=TURN_TIME,timer=null,active=false,dragging=false,resolved=false,currentNodes=[],drawn=[],selectedRecipes=[],handCards=[],handSelection=[],lastMove=0;
 let tutorial=new URLSearchParams(location.search).get("tutorial")==="1",tutorialPhase=tutorial?"select":"off";
-
-const seFiles={
- card1:"assets/se/card_select_1.wav",card2:"assets/se/card_select_2.wav",card3:"assets/se/card_select_3.wav",card4:"assets/se/card_select_4.wav",
- set:"assets/se/card_set.wav",voice:"assets/se/node_voice.wav",rhythm:"assets/se/node_rhythm.wav",glory:"assets/se/node_glory.wav",
- combo1:"assets/se/combo_1.wav",combo2:"assets/se/combo_2.wav",combo3:"assets/se/combo_3.wav",combo4:"assets/se/combo_4.wav",
- unique:"assets/se/rin_unique.wav",turn:"assets/se/turn_start.wav",end:"assets/se/time_end.wav"
-};
-const se={}; Object.entries(seFiles).forEach(([k,v])=>{const a=new Audio(v);a.preload="auto";se[k]=a});
-function playSE(k,vol=.72){const a=se[k];if(!a)return;try{a.pause();a.currentTime=0;a.volume=vol;const p=a.play();if(p&&p.catch)p.catch(()=>{})}catch(e){}}
-
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function seqHTML(seq){return seq.map((t,i)=>`${i?"<span>›</span>":""}<img class="comboWave ${t}" src="${waveIcon[t]}" alt="${waveJP[t]}">`).join("")}
 function resize(){const r=game.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;canvas.style.width=r.width+"px";canvas.style.height=r.height+"px";ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);draw()}
 addEventListener("resize",resize);
 function setTheme(){const t=themes[turn]||themes[4];$("turnLabel").textContent=`TURN ${turn+1} / 5`;$("themeName").textContent=t[0];$("themeDesc").textContent=t[1];$("difficulty").textContent=["DRIFT","DRIFT","FLOW","FLOW+","MOVING"][turn]||"DRIFT"}
 function renderDock(){const row=document.querySelector("#comboDock .recipeRow");row.innerHTML="";selectedRecipes.forEach(r=>{const d=document.createElement("div");d.className="recipe"+(r.rin?" uniqueRecipe":"");d.dataset.recipe=r.name;d.innerHTML=`<div class="recipeName">${r.rin?"◆ ":""}${r.name}</div><div class="recipeSeq">${seqHTML(r.seq)}</div>`;row.appendChild(d)})}
-function renderHand(){const g=$("handGrid");g.innerHTML="";handCards.forEach(r=>{const b=document.createElement("button");b.className="handCard"+(r.rin?" rinCard":"")+(handSelection.includes(r)?" selected":"");b.innerHTML=`<div class="pickNo">${handSelection.indexOf(r)+1}</div><div class="cardName">${r.rin?"◆ ":""}${r.name}</div><div class="cardSeq">${seqHTML(r.seq)}</div><div class="cardEffect">${r.effect}</div>`;b.onclick=()=>{const i=handSelection.indexOf(r);if(i>=0)handSelection.splice(i,1);else if(handSelection.length<4){handSelection.push(r);playSE("card"+handSelection.length,.55)}renderHand()};g.appendChild(b)});$("handCount").textContent=`${handSelection.length} / 4 SET`;$("handSetBtn").disabled=handSelection.length!==4}
+function renderHand(){const g=$("handGrid");g.innerHTML="";handCards.forEach(r=>{const b=document.createElement("button");b.className="handCard"+(r.rin?" rinCard":"")+(handSelection.includes(r)?" selected":"");b.innerHTML=`<div class="pickNo">${handSelection.indexOf(r)+1}</div><div class="cardName">${r.rin?"◆ ":""}${r.name}</div><div class="cardSeq">${seqHTML(r.seq)}</div><div class="cardEffect">${r.effect}</div>`;b.onclick=()=>{const i=handSelection.indexOf(r);if(i>=0)handSelection.splice(i,1);else if(handSelection.length<4)handSelection.push(r);renderHand()};g.appendChild(b)});$("handCount").textContent=`${handSelection.length} / 4 SET`;$("handSetBtn").disabled=handSelection.length!==4}
 function makeHand(tut){handSelection=[];handCards=tut?["反逆の歌","空へ届け","まだ歌える","この声が届くなら","光とともに","鼓動を重ねて"].map(n=>comboPool.find(c=>c.name===n)):shuffle(comboPool).slice(0,6);renderHand()}
-$("handSetBtn").onclick=()=>{if(handSelection.length!==4)return;selectedRecipes=[...handSelection];playSE("set",.68);renderDock();$("handOverlay").style.display="none";$("comboDock").classList.remove("selecting");if(tutorial&&tutorialPhase==="select"){tutorialPhase="trace";time=TURN_TIME;$("countdown").textContent="30";clock();$("tutorialHint").textContent="4つのCOMBOを一本の線で成立させよう";$("tutorialHint").style.display="block"}active=true};
-function clock(){clearInterval(timer);timer=setInterval(()=>{time-=.1;$("countdown").textContent=Math.max(0,Math.ceil(time));if(time<=0){clearInterval(timer);timer=null;playSE("end",.62);finish()}},100)}
-function openTurn(tut=false){resolved=false;active=false;dragging=false;drawn=[];selectedRecipes=[];time=30;setTheme();spawn(tut);$("comboDock").classList.add("selecting");$("handOverlay").style.display="block";$("handGuide").textContent=tut?"盤面を見て、最大4COMBOを作れる4枚を選んでください":"盤面を見て、今回使う4枚を選択";makeHand(tut);$("countdown").textContent="30";if(!tut)playSE("turn",.58);if(tut){clearInterval(timer);timer=null}else{clock()}}
+$("handSetBtn").onclick=()=>{if(handSelection.length!==4)return;selectedRecipes=[...handSelection];renderDock();$("handOverlay").style.display="none";$("comboDock").classList.remove("selecting");if(tutorial&&tutorialPhase==="select"){tutorialPhase="trace";time=TURN_TIME;$("countdown").textContent="30";clock();$("tutorialHint").textContent="4つのCOMBOを一本の線で成立させよう";$("tutorialHint").style.display="block"}active=true};
+function clock(){clearInterval(timer);timer=setInterval(()=>{time-=.1;$("countdown").textContent=Math.max(0,Math.ceil(time));if(time<=0){clearInterval(timer);timer=null;finish()}},100)}
+function openTurn(tut=false){resolved=false;active=false;dragging=false;drawn=[];selectedRecipes=[];time=30;setTheme();spawn(tut);$("comboDock").classList.add("selecting");$("handOverlay").style.display="block";$("handGuide").textContent=tut?"盤面を見て、最大4COMBOを作れる4枚を選んでください":"盤面を見て、今回使う4枚を選択";makeHand(tut);$("countdown").textContent="30";if(tut){clearInterval(timer);timer=null}else{clock()}}
 function points(n){const p=[];let guard=0;while(p.length<n&&guard++<800){const q={x:9+Math.random()*82,y:12+Math.random()*63};if(p.every(v=>Math.hypot(q.x-v.x,q.y-v.y)>10.2))p.push(q)}while(p.length<n)p.push({x:10+Math.random()*80,y:13+Math.random()*61});return p}
 function spawn(tut){nodeLayer.innerHTML="";currentNodes=[];let types,pts;if(tut){types=["voice","voice","voice","rhythm","voice","glory","rhythm","glory","voice","rhythm","glory"];pts=[{x:16,y:30},{x:34,y:23},{x:51,y:31},{x:66,y:43},{x:52,y:56},{x:24,y:58},{x:78,y:25},{x:83,y:61},{x:38,y:69},{x:69,y:69},{x:11,y:46}]}else{const n=11,all=["voice","rhythm","glory"];types=Array.from({length:n},()=>all[Math.floor(Math.random()*3)]);pts=points(n)}types.forEach((type,i)=>{const e=document.createElement("div");e.className=`node ${type}`+(types.length>=9?" compact":" medium");e.style.left=pts[i].x+"%";e.style.top=pts[i].y+"%";e.dataset.type=type;e.dataset.moving="1";e._px=pts[i].x;e._py=pts[i].y;const a=Math.random()*6.28;const speeds=[.00145,.00165,.00195,.00235,.0030];const sp=tut?speeds[0]:(speeds[turn]||speeds[0]);e._vx=Math.cos(a)*sp;e._vy=Math.sin(a)*sp;nodeLayer.appendChild(e);currentNodes.push(e)});resize()}
 function center(e){const g=game.getBoundingClientRect(),r=e.getBoundingClientRect();return{x:r.left-g.left+r.width/2,y:r.top-g.top+r.height/2}}
@@ -961,21 +955,21 @@ function pos(x,y){const r=game.getBoundingClientRect();return{x:x-r.left,y:y-r.t
 function hit(p){const g=game.getBoundingClientRect();return currentNodes.find(e=>{const r=e.getBoundingClientRect();return Math.hypot(p.x-(r.left-g.left+r.width/2),p.y-(r.top-g.top+r.height/2))<r.width*.62})}
 function has(route,seq){outer:for(let i=0;i<=route.length-seq.length;i++){for(let j=0;j<seq.length;j++)if(route[i+j]!==seq[j])continue outer;return true}return false}
 function matches(route){return selectedRecipes.filter(r=>has(route,r.seq))}
-function add(e){if(!e||drawn.includes(e))return;drawn.push(e);e.classList.add("sel");playSE(e.dataset.type,.46);const route=drawn.map(n=>n.dataset.type);document.querySelectorAll(".recipe").forEach(x=>{const r=selectedRecipes.find(v=>v.name===x.dataset.recipe);x.classList.toggle("matched",!!r&&has(route,r.seq))});draw()}
+function add(e){if(!e||drawn.includes(e))return;drawn.push(e);e.classList.add("sel");const route=drawn.map(n=>n.dataset.type);document.querySelectorAll(".recipe").forEach(x=>{const r=selectedRecipes.find(v=>v.name===x.dataset.recipe);x.classList.toggle("matched",!!r&&has(route,r.seq))});draw()}
 function begin(x,y){if(!active)return;dragging=true;const p=pos(x,y);add(hit(p));draw(p)}
 function move(x,y){if(!active||!dragging)return;const now=performance.now();if(now-lastMove<30)return;lastMove=now;const p=pos(x,y);add(hit(p));draw(p)}
 function end(){if(!active||!dragging)return;dragging=false;draw();if(drawn.length)finish()}
 touchSurface.addEventListener("touchstart",e=>{if(active&&e.touches[0]){e.preventDefault();begin(e.touches[0].clientX,e.touches[0].clientY)}},{passive:false});touchSurface.addEventListener("touchmove",e=>{if(dragging&&e.touches[0]){e.preventDefault();move(e.touches[0].clientX,e.touches[0].clientY)}},{passive:false});touchSurface.addEventListener("touchend",e=>{e.preventDefault();end()},{passive:false});touchSurface.onmousedown=e=>begin(e.clientX,e.clientY);addEventListener("mousemove",e=>move(e.clientX,e.clientY));addEventListener("mouseup",end);
-function uniqueFx(card,done){$("uniqueFxName").textContent=card.name;$("uniqueFxSub").textContent=card.effect;const f=$("uniqueFx");f.style.display="flex";f.classList.remove("fire");void f.offsetWidth;f.classList.add("fire");playSE("unique",.78);if(navigator.vibrate)navigator.vibrate(35);setTimeout(()=>{f.style.display="none";done()},480)}
-function cutin(level,name,gain,route,done){level=Math.max(1,Math.min(4,level));playSE("combo"+level,level===4?.88:.72);const o=$("cutinOverlay");o.className=`level${level}`;$("cutinImage").src=`cutin_${level}.png`;$("cutinMoveName").textContent=name;$("cutinGainScore").textContent=`+${gain.toLocaleString()}`;$("cutinRoute").textContent=route;$("waveFlash").classList.remove("fire");void $("waveFlash").offsetWidth;$("waveFlash").classList.add("fire");setTimeout(()=>{o.style.display="block";o.classList.add("enter");const hold=[0,700,800,900,1250][level];setTimeout(()=>{o.classList.remove("enter");o.classList.add("exit");setTimeout(()=>{o.style.display="none";o.className="";done()},200)},hold)},70)}
+function uniqueFx(card,done){$("uniqueFxName").textContent=card.name;$("uniqueFxSub").textContent=card.effect;const f=$("uniqueFx");f.style.display="flex";f.classList.remove("fire");void f.offsetWidth;f.classList.add("fire");if(navigator.vibrate)navigator.vibrate(35);setTimeout(()=>{f.style.display="none";done()},480)}
+function cutin(level,name,gain,route,done){level=Math.max(1,Math.min(4,level));const o=$("cutinOverlay");o.className=`level${level}`;$("cutinImage").src=`cutin_${level}.png`;$("cutinMoveName").textContent=name;$("cutinGainScore").textContent=`+${gain.toLocaleString()}`;$("cutinRoute").textContent=route;$("waveFlash").classList.remove("fire");void $("waveFlash").offsetWidth;$("waveFlash").classList.add("fire");setTimeout(()=>{o.style.display="block";o.classList.add("enter");const hold=[0,700,800,900,1250][level];setTimeout(()=>{o.classList.remove("enter");o.classList.add("exit");setTimeout(()=>{o.style.display="none";o.className="";done()},200)},hold)},70)}
 function calc(types,m){let mult=1;m.filter(x=>!x.rin).forEach(x=>mult*=x.mult);const vm=m.filter(x=>!x.rin&&x.seq.includes("voice"));if(m.some(x=>x.name==="反逆の歌")&&vm.length>=2)mult*=2;if(m.some(x=>x.name==="渇望の歌")&&vm.length>=1)mult*=2;if(m.some(x=>x.name==="世界に抗う、反逆の歌姫")&&vm.length>=3)mult*=2.5;return Math.round(Math.max(1,types.length)*6500*mult)}
 function finish(){if(!active||resolved)return;resolved=true;active=false;clearInterval(timer);timer=null;const types=drawn.map(n=>n.dataset.type),m=matches(types);if(tutorial&&tutorialPhase==="trace"&&m.length<4){resolved=false;$("tutorialHint").textContent=`現在 ${m.length} COMBO。4 COMBOになる一本を探してもう一度！`;setTimeout(()=>{drawn=[];currentNodes.forEach(n=>n.classList.remove("sel"));draw();active=true},450);return}const gain=calc(types,m);score+=gain;audience=Math.min(100,audience+types.length+m.length*6);$("score").textContent=score.toLocaleString();$("audience").textContent=audience+"%";const after=()=>{if(m.length)cutin(m.length,m[m.length-1].name,gain,types.map(x=>waveJP[x]).join(" → "),next);else next()};const u=m.find(x=>x.rin);u?uniqueFx(u,after):after();
-function next(){if(tutorial&&tutorialPhase==="trace"){tutorialPhase="story";$("tutorialHint").style.display="none";story();return}turn++;if(turn>=5){$("turnLabel").textContent="LIVE CLEAR";$("countdown").textContent="END";$("themeName").textContent="FINAL RESULT";$("finalScoreValue").textContent=score.toLocaleString();$("finalScoreOverlay").style.display="flex"}else setTimeout(()=>openTurn(false),300)}}
+function next(){if(tutorial&&tutorialPhase==="trace"){tutorialPhase="story";$("tutorialHint").style.display="none";story();return}turn++;if(turn>=5){$("turnLabel").textContent="LIVE CLEAR";$("countdown").textContent="END";$("themeName").textContent="FINAL RESULT";$("finalScoreValue").textContent=score.toLocaleString();$("finalScoreOverlay").style.display="flex";setTimeout(()=>{$("postLiveFade").style.opacity="1";setTimeout(()=>{window.location.href="adv_after.html"},800)},1800)}else setTimeout(()=>openTurn(false),300)}}
 function story(){const s=[["試験官","……凄まじい歌力だ！"],["試験官","もっと！"],["凛","……言われなくても"]];let i=0;const show=()=>{$("storySpeaker").textContent=s[i][0];$("storyText").textContent=s[i][1];$("storyOverlay").style.display="flex"};show();$("storyOverlay").onclick=()=>{i++;if(i>=s.length){$("storyOverlay").style.display="none";$("tutorialComplete").style.display="flex";setTimeout(()=>{$("tutorialComplete").style.display="none";tutorial=false;turn=0;score=0;audience=20;pre(()=>openTurn(false))},900)}else show()}}
 function pre(cb){const o=$("preCountdown"),s=["3","2","1","LIVE START!"];let i=0;o.style.display="flex";o.textContent=s[0];const iv=setInterval(()=>{i++;if(i>=s.length){clearInterval(iv);o.style.display="none";cb()}else o.textContent=s[i]},520)}
 let la=0;function anim(now){if(now-la>32){la=now;if(active){currentNodes.forEach(e=>{if(e.dataset.moving!=="1"||drawn.includes(e))return;e._px+=e._vx*32;e._py+=e._vy*32;if(e._px<10||e._px>90)e._vx*=-1;if(e._py<13||e._py>74)e._vy*=-1;e.style.left=e._px+"%";e.style.top=e._py+"%"});if(dragging)draw()}}requestAnimationFrame(anim)}requestAnimationFrame(anim);
 function reset(){clearInterval(timer);timer=null;turn=0;score=0;audience=20;active=false;resolved=false;drawn=[];$("score").textContent="0";$("audience").textContent="20%";$("finalScoreOverlay").style.display="none";$("handOverlay").style.display="none";$("comboDock").classList.remove("selecting");tutorial?setTimeout(()=>openTurn(true),200):setTimeout(()=>pre(()=>openTurn(false)),200)}
-$("resetBtn").onclick=reset;$("retryLive").onclick=()=>{tutorial=false;reset()};$("continueAdv").onclick=()=>{window.location.href="adv_after.html"};[1,2,3,4].forEach(i=>{const im=new Image();im.src=`cutin_${i}.png`});reset();
+$("resetBtn").onclick=reset;$("retryLive").onclick=()=>{tutorial=false;reset()};[1,2,3,4].forEach(i=>{const im=new Image();im.src=`cutin_${i}.png`});reset();
 
 </script>
 </body>
