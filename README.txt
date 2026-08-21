@@ -1,20 +1,10 @@
-HARMONIA v24.5 GAMEPLAY/UI FIX
+HARMONIA v24.6 EXISTENCE WAVE MOTION
 
-変更:
-- 本番盤面ノード数を毎ターン11個へ
-- チュートリアル盤面も11個へ
-- ノードサイズを約82%へ縮小
-- 下段COMBO HUDを大幅圧縮（空白削減）
-- COMBOルートアイコンを拡大
-- 小さい/見づらい文字を一段階拡大
-- チュートリアルと本番で、SET後のゲーム画面UIを完全共通化
-- カード選択中だけCOMBO HUDを非表示
-- 選択画面は盤面が見えるよう透過
-- チュートリアルは選択中タイマー停止、SET後30秒開始
-- 本番は選択開始から30秒
+- TURN1から全ノードが常時ゆっくり漂流
+- TURNが進むごとに少しずつ速度上昇
+- TutorialもTURN1相当の穏やかな漂流
+- ノード自体にごく弱い呼吸/脈動アニメーション
+- なぞって選択済みのノードはその場で固定
+- v24.5の11ノード/小型化/共通HUD/文字拡大を維持
 
-使い方:
-この live.html を GitHub Desktop の song-for-life-prototype/live.html に上書き
-→ Summary「v24.5 UI/盤面修正」
-→ Commit to main
-→ Push origin
+live.html を上書き → Commit → Push

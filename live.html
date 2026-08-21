@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA LIVE v24.5</title>
+<title>HARMONIA LIVE v24.6</title>
 <style>
 :root {
   --glass:rgba(8,12,24,.48);
@@ -777,6 +777,20 @@ button{font:inherit}
   padding:4px 8px!important;
 }
 
+
+/* v24.6 EXISTENCE WAVE MOTION */
+.node{
+  animation:existenceBreath 2.7s ease-in-out infinite alternate;
+  will-change:left,top,transform,filter;
+}
+.node:nth-child(3n+2){animation-duration:3.15s}
+.node:nth-child(3n){animation-duration:2.35s}
+.node.sel{animation:none!important}
+@keyframes existenceBreath{
+  0%{transform:translate(-50%,-50%) scale(.975);filter:brightness(.96)}
+  100%{transform:translate(-50%,-50%) scale(1.025);filter:brightness(1.08)}
+}
+
 </style>
 </head>
 <body>
@@ -922,7 +936,7 @@ function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function seqHTML(seq){return seq.map((t,i)=>`${i?"<span>›</span>":""}<img class="comboWave ${t}" src="${waveIcon[t]}" alt="${waveJP[t]}">`).join("")}
 function resize(){const r=game.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;canvas.style.width=r.width+"px";canvas.style.height=r.height+"px";ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);draw()}
 addEventListener("resize",resize);
-function setTheme(){const t=themes[turn]||themes[4];$("turnLabel").textContent=`TURN ${turn+1} / 5`;$("themeName").textContent=t[0];$("themeDesc").textContent=t[1];$("difficulty").textContent=turn===4?"MOVING":"STATIC"}
+function setTheme(){const t=themes[turn]||themes[4];$("turnLabel").textContent=`TURN ${turn+1} / 5`;$("themeName").textContent=t[0];$("themeDesc").textContent=t[1];$("difficulty").textContent=["DRIFT","DRIFT","FLOW","FLOW+","MOVING"][turn]||"DRIFT"}
 function renderDock(){const row=document.querySelector("#comboDock .recipeRow");row.innerHTML="";selectedRecipes.forEach(r=>{const d=document.createElement("div");d.className="recipe"+(r.rin?" uniqueRecipe":"");d.dataset.recipe=r.name;d.innerHTML=`<div class="recipeName">${r.rin?"◆ ":""}${r.name}</div><div class="recipeSeq">${seqHTML(r.seq)}</div>`;row.appendChild(d)})}
 function renderHand(){const g=$("handGrid");g.innerHTML="";handCards.forEach(r=>{const b=document.createElement("button");b.className="handCard"+(r.rin?" rinCard":"")+(handSelection.includes(r)?" selected":"");b.innerHTML=`<div class="pickNo">${handSelection.indexOf(r)+1}</div><div class="cardName">${r.rin?"◆ ":""}${r.name}</div><div class="cardSeq">${seqHTML(r.seq)}</div><div class="cardEffect">${r.effect}</div>`;b.onclick=()=>{const i=handSelection.indexOf(r);if(i>=0)handSelection.splice(i,1);else if(handSelection.length<4)handSelection.push(r);renderHand()};g.appendChild(b)});$("handCount").textContent=`${handSelection.length} / 4 SET`;$("handSetBtn").disabled=handSelection.length!==4}
 function makeHand(tut){handSelection=[];handCards=tut?["反逆の歌","空へ届け","まだ歌える","この声が届くなら","光とともに","鼓動を重ねて"].map(n=>comboPool.find(c=>c.name===n)):shuffle(comboPool).slice(0,6);renderHand()}
@@ -930,7 +944,7 @@ $("handSetBtn").onclick=()=>{if(handSelection.length!==4)return;selectedRecipes=
 function clock(){clearInterval(timer);timer=setInterval(()=>{time-=.1;$("countdown").textContent=Math.max(0,Math.ceil(time));if(time<=0){clearInterval(timer);timer=null;finish()}},100)}
 function openTurn(tut=false){resolved=false;active=false;dragging=false;drawn=[];selectedRecipes=[];time=30;setTheme();spawn(tut);$("comboDock").classList.add("selecting");$("handOverlay").style.display="block";$("handGuide").textContent=tut?"盤面を見て、最大4COMBOを作れる4枚を選んでください":"盤面を見て、今回使う4枚を選択";makeHand(tut);$("countdown").textContent="30";if(tut){clearInterval(timer);timer=null}else{clock()}}
 function points(n){const p=[];let guard=0;while(p.length<n&&guard++<800){const q={x:9+Math.random()*82,y:12+Math.random()*63};if(p.every(v=>Math.hypot(q.x-v.x,q.y-v.y)>10.2))p.push(q)}while(p.length<n)p.push({x:10+Math.random()*80,y:13+Math.random()*61});return p}
-function spawn(tut){nodeLayer.innerHTML="";currentNodes=[];let types,pts;if(tut){types=["voice","voice","voice","rhythm","voice","glory","rhythm","glory","voice","rhythm","glory"];pts=[{x:16,y:30},{x:34,y:23},{x:51,y:31},{x:66,y:43},{x:52,y:56},{x:24,y:58},{x:78,y:25},{x:83,y:61},{x:38,y:69},{x:69,y:69},{x:11,y:46}]}else{const n=11,all=["voice","rhythm","glory"];types=Array.from({length:n},()=>all[Math.floor(Math.random()*3)]);pts=points(n)}types.forEach((type,i)=>{const e=document.createElement("div");e.className=`node ${type}`+(types.length>=9?" compact":" medium");e.style.left=pts[i].x+"%";e.style.top=pts[i].y+"%";e.dataset.type=type;e.dataset.moving=(!tut&&turn===4)?"1":"0";e._px=pts[i].x;e._py=pts[i].y;const a=Math.random()*6.28;e._vx=Math.cos(a)*.004;e._vy=Math.sin(a)*.004;nodeLayer.appendChild(e);currentNodes.push(e)});resize()}
+function spawn(tut){nodeLayer.innerHTML="";currentNodes=[];let types,pts;if(tut){types=["voice","voice","voice","rhythm","voice","glory","rhythm","glory","voice","rhythm","glory"];pts=[{x:16,y:30},{x:34,y:23},{x:51,y:31},{x:66,y:43},{x:52,y:56},{x:24,y:58},{x:78,y:25},{x:83,y:61},{x:38,y:69},{x:69,y:69},{x:11,y:46}]}else{const n=11,all=["voice","rhythm","glory"];types=Array.from({length:n},()=>all[Math.floor(Math.random()*3)]);pts=points(n)}types.forEach((type,i)=>{const e=document.createElement("div");e.className=`node ${type}`+(types.length>=9?" compact":" medium");e.style.left=pts[i].x+"%";e.style.top=pts[i].y+"%";e.dataset.type=type;e.dataset.moving="1";e._px=pts[i].x;e._py=pts[i].y;const a=Math.random()*6.28;const speeds=[.00145,.00165,.00195,.00235,.0030];const sp=tut?speeds[0]:(speeds[turn]||speeds[0]);e._vx=Math.cos(a)*sp;e._vy=Math.sin(a)*sp;nodeLayer.appendChild(e);currentNodes.push(e)});resize()}
 function center(e){const g=game.getBoundingClientRect(),r=e.getBoundingClientRect();return{x:r.left-g.left+r.width/2,y:r.top-g.top+r.height/2}}
 function draw(temp){const w=canvas.width/devicePixelRatio,h=canvas.height/devicePixelRatio;ctx.clearRect(0,0,w,h);if(!drawn.length)return;const p=drawn.map(center);if(temp)p.push(temp);if(p.length<2)return;const gr=ctx.createLinearGradient(0,0,w,h);gr.addColorStop(0,"#6ee1ff");gr.addColorStop(.5,"#dca0ff");gr.addColorStop(1,"#ffeb96");ctx.save();ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(v.x,v.y):ctx.moveTo(v.x,v.y));ctx.strokeStyle=gr;ctx.lineWidth=5;ctx.shadowColor="#a87cff";ctx.shadowBlur=8;ctx.stroke();ctx.restore()}
 function pos(x,y){const r=game.getBoundingClientRect();return{x:x-r.left,y:y-r.top}}
