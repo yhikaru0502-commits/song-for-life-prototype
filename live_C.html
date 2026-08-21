@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA LIVE UI A / v19</title>
+<title>HARMONIA LIVE UI C / v19</title>
 <style>
 :root {
   --glass:rgba(8,12,24,.48);
@@ -324,21 +324,21 @@ button{font:inherit}
 }
 
 
-/* UI A: right-top vertical cards */
+/* UI C: right-top 2x2 */
 #comboDock{
   left:auto!important;right:8px!important;top:156px!important;bottom:auto!important;
-  width:154px!important;padding:7px!important;border-radius:14px!important;
-  background:rgba(7,11,21,.60)!important;
+  width:220px!important;padding:7px!important;border-radius:14px!important;
+  background:rgba(7,11,21,.58)!important;
 }
-#comboDock .comboTitle{font-size:8px!important;margin-bottom:5px}
-#comboDock .recipeRow{grid-template-columns:1fr!important;gap:5px!important;margin-top:4px!important}
+#comboDock .comboTitle{font-size:8px!important}
+#comboDock .recipeRow{grid-template-columns:repeat(2,1fr)!important;gap:5px!important;margin-top:5px!important}
 #comboDock .recipe{
-  min-height:48px!important;padding:5px 6px!important;border-radius:10px!important;
-  display:grid!important;grid-template-columns:52px 1fr!important;align-items:center!important;
+  height:64px!important;padding:5px 4px!important;border-radius:10px!important;
 }
-#comboDock .recipeName{text-align:left!important;font-size:7px!important}
-#comboDock .recipeSeq{justify-content:flex-start!important}
-#comboDock .comboWave{width:23px;height:23px}
+#comboDock .recipeName{font-size:6.5px!important}
+#comboDock .recipeSeq{gap:0!important}
+#comboDock .comboWave{width:22px;height:22px}
+#comboDock .recipeSeq span{font-size:9px}
 #dragHint{bottom:18px!important}
 
 </style>
@@ -370,7 +370,7 @@ button{font:inherit}
       </div>
     </div>
 
-    <div id="uiVariantTag">UI A</div>
+    <div id="uiVariantTag">UI C</div>
     <div id="audienceHud" class="glass">
       <span>AUDIENCE</span><b id="audience">20%</b>
     </div>
