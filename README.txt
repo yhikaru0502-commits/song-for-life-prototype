@@ -1,10 +1,26 @@
-HARMONIA v24.6 EXISTENCE WAVE MOTION
+HARMONIA v24.7 SOUND FEEL
 
-- TURN1から全ノードが常時ゆっくり漂流
-- TURNが進むごとに少しずつ速度上昇
-- TutorialもTURN1相当の穏やかな漂流
-- ノード自体にごく弱い呼吸/脈動アニメーション
-- なぞって選択済みのノードはその場で固定
-- v24.5の11ノード/小型化/共通HUD/文字拡大を維持
+追加した仮SE:
+- card_select_1〜4.wav : カードを選ぶほど音程が上がる
+- card_set.wav : 4枚SET確定
+- node_voice.wav : 声ノード（澄んだ高域）
+- node_rhythm.wav : 律ノード（アタックのある中域）
+- node_glory.wav : 華ノード（煌めく倍音）
+- combo_1〜4.wav : COMBOが増えるほど上昇、4は解放感を強化
+- rin_unique.wav : 凛固有スキル専用の低い衝撃＋残響
+- turn_start.wav : ターン開始
+- time_end.wav : タイムアップ
 
-live.html を上書き → Commit → Push
+実装:
+- カード選択1→4で段階的に音程上昇
+- SET時SE
+- なぞったノード属性ごとのSE
+- COMBO成立数に応じたSE
+- 凛固有ACTIVATE専用SE
+- ターン開始/終了SE
+
+配置:
+live.html
+assets/se/*.wav
+
+GitHub側では live.html と assets/se フォルダをまとめて上書き/追加してください。
