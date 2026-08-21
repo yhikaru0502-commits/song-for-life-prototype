@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA LIVE v20</title>
+<title>HARMONIA LIVE v23</title>
 <style>
 :root {
   --glass:rgba(8,12,24,.48);
@@ -420,6 +420,74 @@ button{font:inherit}
   }
 }
 
+
+/* v23: combo-card hand + tutorial */
+#handOverlay{
+  position:absolute;inset:0;z-index:76;display:none;
+  background:linear-gradient(180deg,rgba(3,6,14,.22),rgba(3,6,14,.78) 52%,rgba(3,6,14,.94));
+  pointer-events:auto;
+}
+#handPanel{
+  position:absolute;left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom));
+  padding:10px;border-radius:16px;background:rgba(7,11,21,.92);
+  border:1px solid rgba(255,255,255,.16);
+}
+#handTitle{font-size:12px;font-weight:900;letter-spacing:.05em}
+#handGuide{font-size:10px;color:rgba(255,255,255,.75);margin-top:3px;line-height:1.45}
+#handGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}
+.handCard{
+  min-height:72px;border-radius:12px;padding:6px 4px;
+  border:1px solid rgba(255,255,255,.11);background:rgba(19,25,44,.72);
+  color:#fff;text-align:center;position:relative;
+}
+.handCard .cardName{font-size:8px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.handCard .cardSeq{display:flex;align-items:center;justify-content:center;gap:1px;margin-top:6px}
+.handCard .cardSeq img{width:27px;height:27px;object-fit:contain}
+.handCard .cardSeq span{font-size:10px;opacity:.55}
+.handCard.selected{
+  border-color:rgba(255,228,115,.9);background:rgba(83,61,19,.58);
+  box-shadow:0 0 14px rgba(255,218,83,.28)
+}
+.handCard.forced{
+  border-color:rgba(120,226,255,.95);
+  box-shadow:0 0 18px rgba(100,220,255,.45)
+}
+.handCard.locked{opacity:.32}
+.handCard .pickNo{
+  display:none;position:absolute;right:4px;top:3px;width:16px;height:16px;border-radius:50%;
+  align-items:center;justify-content:center;background:#fff;color:#111;font-size:9px;font-weight:900
+}
+.handCard.selected .pickNo{display:flex}
+#handFooter{display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:8px}
+#handCount{font-size:10px;color:rgba(255,255,255,.75)}
+#handSetBtn{
+  border:1px solid rgba(255,255,255,.28);border-radius:999px;
+  padding:8px 18px;background:rgba(255,255,255,.10);color:#fff;font-weight:900;font-size:11px;
+}
+#handSetBtn:disabled{opacity:.28}
+#tutorialHint{
+  position:absolute;z-index:55;left:50%;top:86px;transform:translateX(-50%);
+  width:min(88%,370px);display:none;padding:9px 12px;border-radius:12px;
+  background:rgba(4,8,18,.84);border:1px solid rgba(126,226,255,.28);
+  text-align:center;font-size:11px;font-weight:800;line-height:1.5;pointer-events:none;
+}
+#storyOverlay{
+  position:absolute;inset:0;z-index:90;display:none;align-items:center;justify-content:center;
+  background:rgba(2,4,10,.58);pointer-events:auto;padding:20px;
+}
+#storyBox{
+  width:min(92%,390px);padding:20px 18px;border-radius:18px;
+  background:rgba(7,10,19,.92);border:1px solid rgba(255,255,255,.16);text-align:left;
+}
+#storySpeaker{font-size:11px;color:#8ee8ff;font-weight:900;letter-spacing:.08em}
+#storyText{margin-top:8px;font-size:22px;font-weight:900;line-height:1.55}
+#storyTap{margin-top:14px;text-align:right;font-size:9px;opacity:.55}
+#tutorialComplete{
+  position:absolute;inset:0;z-index:92;display:none;align-items:center;justify-content:center;
+  background:rgba(2,4,10,.76);text-align:center;font-weight:1000;letter-spacing:.08em;
+  font-size:28px;pointer-events:none;
+}
+
 </style>
 </head>
 <body>
@@ -445,7 +513,7 @@ button{font:inherit}
       </div>
       <div id="timerBox" class="glass">
         <div class="hudLabel">TIME</div>
-        <div id="countdown">7</div>
+        <div id="countdown">30</div>
       </div>
     </div>
 
@@ -483,6 +551,30 @@ button{font:inherit}
       </div>
     </div>
 
+
+    <div id="handOverlay">
+      <div id="handPanel">
+        <div id="handTitle">COMBO SKILL / SELECT 4</div>
+        <div id="handGuide">今回使うコンボスキルを4つ選択</div>
+        <div id="handGrid"></div>
+        <div id="handFooter">
+          <div id="handCount">0 / 4 SET</div>
+          <button id="handSetBtn" type="button" disabled>SET</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="tutorialHint"></div>
+
+    <div id="storyOverlay">
+      <div id="storyBox">
+        <div id="storySpeaker"></div>
+        <div id="storyText"></div>
+        <div id="storyTap">TAP ▶</div>
+      </div>
+    </div>
+    <div id="tutorialComplete">TUTORIAL COMPLETE</div>
+
     <div id="noComboOverlay"><div>NO COMBO</div></div>
 
     <button id="resetBtn" type="button">RESET</button>
@@ -512,33 +604,43 @@ button{font:inherit}
 </div>
 <script>
 
-
 const liveBg=document.getElementById("liveBg");
 function keepLiveVideoPlaying(){
-  if(!liveBg) return;
+  if(!liveBg)return;
   const p=liveBg.play();
-  if(p && typeof p.catch==="function") p.catch(()=>{});
+  if(p&&typeof p.catch==="function")p.catch(()=>{});
 }
 
+const waveIcon={
+  voice:"assets/wave/voice_normal.png",
+  rhythm:"assets/wave/rhythm_normal.png",
+  glory:"assets/wave/glory_normal.png"
+};
+const waveJP={voice:"声響",rhythm:"律動",glory:"華耀"};
+
 const skills=[
-  {name:"声響",type:"voice"},
-  {name:"声響",type:"voice"},
-  {name:"声響",type:"voice"},
-  {name:"律動",type:"rhythm"},
-  {name:"律動",type:"rhythm"},
-  {name:"華耀",type:"glory"}
+  {name:"声響",type:"voice"},{name:"声響",type:"voice"},{name:"声響",type:"voice"},
+  {name:"律動",type:"rhythm"},{name:"律動",type:"rhythm"},{name:"華耀",type:"glory"}
 ];
-const recipes=[
+
+/* Prototype combo pool. Names/rates can be tuned later. */
+const comboPool=[
   {seq:["voice","voice"],name:"SHOUT",mult:1.35},
   {seq:["voice","voice","voice"],name:"SCREAM",mult:1.75},
   {seq:["voice","voice","rhythm"],name:"BREAK BEAT",mult:1.65},
-  {seq:["voice","glory","voice"],name:"HOWLING",mult:1.80}
+  {seq:["voice","glory","voice"],name:"HOWLING",mult:1.80},
+  {seq:["rhythm","rhythm"],name:"PULSE",mult:1.30},
+  {seq:["glory","voice"],name:"SPARK",mult:1.38},
+  {seq:["rhythm","voice","rhythm"],name:"RUSH",mult:1.62},
+  {seq:["voice","voice","glory","voice"],name:"REBELLION",mult:2.05}
 ];
+
+const TOTAL_TURNS=5;
+const TURN_TIME=30;
 const themes=[
   {name:"声響増幅",desc:"《声響》を中心にコンボを組め",type:"voice",mult:1.55},
   {name:"律動干渉",desc:"《律動》を経由する複合コンボが有効",type:"rhythm",mult:1.45},
   {name:"華耀共鳴",desc:"《華耀》を含むルートで存在波が輝く",type:"glory",mult:1.45},
-  {name:"声響増幅",desc:"凛の声を途切れさせるな",type:"voice",mult:1.65},
   {name:"複合共鳴",desc:"複数コンボを一本のルートに仕込め",type:"any",mult:1.55},
   {name:"臨界声響",desc:"最長ルートで最大出力を狙え",type:"voice",mult:1.85}
 ];
@@ -552,437 +654,381 @@ const cutinOverlay=document.getElementById("cutinOverlay");
 const cutinImage=document.getElementById("cutinImage");
 const finalScoreOverlay=document.getElementById("finalScoreOverlay");
 const waveFlash=document.getElementById("waveFlash");
+const touchSurface=document.getElementById("touchSurface");
+const handOverlay=document.getElementById("handOverlay");
+const handGrid=document.getElementById("handGrid");
+const handGuide=document.getElementById("handGuide");
+const handSetBtn=document.getElementById("handSetBtn");
+const handCount=document.getElementById("handCount");
+const tutorialHint=document.getElementById("tutorialHint");
+const storyOverlay=document.getElementById("storyOverlay");
+const storySpeaker=document.getElementById("storySpeaker");
+const storyText=document.getElementById("storyText");
 
-let turn=0,score=0,audience=20,active=false,time=7,timer=null;
-let currentNodes=[],drawn=[],dragging=false;
-let lastMoveTime=performance.now();
+let turn=0,score=0,audience=20,active=false,time=TURN_TIME,timer=null;
+let currentNodes=[],drawn=[],dragging=false,lastMoveTime=performance.now(),lastTraceMove=0;
+let selectedRecipes=[],handCards=[],handSelection=[];
+let tutorialMode=new URLSearchParams(location.search).get("tutorial")==="1";
+let tutorialPhase=tutorialMode?"hand":"off";
+let storyStep=0;
 
 function shuffled(a){return [...a].sort(()=>Math.random()-.5)}
-
+function seqHTML(seq,cls="comboWave"){
+  return seq.map((t,i)=>`${i?'<span>›</span>':''}<img class="${cls} ${t}" src="${waveIcon[t]}" alt="${waveJP[t]}">`).join("");
+}
 function resizeCanvas(){
   const r=game.getBoundingClientRect();
-  canvas.width=r.width*devicePixelRatio;
-  canvas.height=r.height*devicePixelRatio;
-  canvas.style.width=r.width+"px";
-  canvas.style.height=r.height+"px";
-  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-  drawLines();
+  canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;
+  canvas.style.width=r.width+"px";canvas.style.height=r.height+"px";
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);drawLines();
 }
 addEventListener("resize",resizeCanvas);
+
+function setTheme(){
+  const t=themes[turn]||themes[themes.length-1];
+  document.getElementById("turnLabel").textContent=`TURN ${turn+1} / ${TOTAL_TURNS}`;
+  document.getElementById("themeName").textContent=t.name;
+  document.getElementById("themeDesc").textContent=t.desc;
+  document.getElementById("difficulty").textContent=turn<TOTAL_TURNS-1?"STATIC":"MOVING";
+}
+
+function renderComboDock(){
+  const row=document.querySelector("#comboDock .recipeRow");
+  row.innerHTML="";
+  selectedRecipes.forEach(r=>{
+    const el=document.createElement("div");
+    el.className="recipe";el.dataset.recipe=r.name;
+    el.innerHTML=`<div class="recipeName">${r.name}</div><div class="recipeSeq">${seqHTML(r.seq)}</div>`;
+    row.appendChild(el);
+  });
+}
+
+function makeHand(isTutorial=false){
+  handSelection=[];
+  if(isTutorial){
+    const must=["SHOUT","SCREAM","BREAK BEAT","HOWLING","PULSE","SPARK"];
+    handCards=must.map(n=>comboPool.find(r=>r.name===n));
+  }else{
+    handCards=shuffled(comboPool).slice(0,6);
+  }
+  renderHand(isTutorial);
+}
+function renderHand(isTutorial=false){
+  handGrid.innerHTML="";
+  handCards.forEach((r,idx)=>{
+    const b=document.createElement("button");
+    b.className="handCard";
+    if(isTutorial&&tutorialPhase==="hand"&&handSelection.length===0&&r.name==="SHOUT")b.classList.add("forced");
+    if(isTutorial&&tutorialPhase==="hand"&&handSelection.length===0&&r.name!=="SHOUT")b.classList.add("locked");
+    if(handSelection.includes(r))b.classList.add("selected");
+    b.innerHTML=`<div class="pickNo">${handSelection.indexOf(r)+1}</div><div class="cardName">${r.name}</div><div class="cardSeq">${seqHTML(r.seq,"")}</div>`;
+    b.addEventListener("click",()=>{
+      if(isTutorial&&tutorialPhase==="hand"&&handSelection.length===0&&r.name!=="SHOUT")return;
+      toggleHand(r,isTutorial);
+    });
+    handGrid.appendChild(b);
+  });
+  handCount.textContent=`${handSelection.length} / 4 SET`;
+  handSetBtn.disabled=handSelection.length!==4;
+}
+function toggleHand(r,isTutorial){
+  const i=handSelection.indexOf(r);
+  if(i>=0)handSelection.splice(i,1);
+  else if(handSelection.length<4)handSelection.push(r);
+  if(isTutorial&&handSelection.length===1&&handSelection[0].name==="SHOUT"){
+    handGuide.textContent="SHOUTをセット。残り3枚は自由に選んでください";
+  }
+  renderHand(isTutorial);
+}
+handSetBtn.addEventListener("click",()=>{
+  if(handSelection.length!==4)return;
+  selectedRecipes=[...handSelection];
+  renderComboDock();
+  handOverlay.style.display="none";
+  if(tutorialMode&&tutorialPhase==="hand"){
+    tutorialPhase="trace";
+    startTutorialTrace();
+  }else{
+    beginTurnAfterHand();
+  }
+});
+
+function openHand(isTutorial=false){
+  active=false;dragging=false;drawn=[];nodeLayer.innerHTML="";ctx.clearRect(0,0,canvas.width,canvas.height);
+  handOverlay.style.display="block";
+  handGuide.textContent=isTutorial
+    ?"まず《SHOUT》を選び、4つのコンボスキルをセットしてください"
+    :"今回使うコンボスキルを4つ選択";
+  makeHand(isTutorial);
+}
 
 function randomPoints(count){
   const pts=[];let tries=0;
   while(pts.length<count&&tries<400){
     tries++;
-    const p={x:11+Math.random()*78,y:11+Math.random()*66};
-    const minDist=count>=9?12.5:(count>=8?14:16);
-    const ok=pts.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>minDist);
-    if(ok)pts.push(p);
+    const p={x:11+Math.random()*78,y:14+Math.random()*58};
+    const minDist=count>=9?12:(count>=8?13.5:15);
+    if(pts.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>minDist))pts.push(p);
   }
-  while(pts.length<count)pts.push({x:13+Math.random()*74,y:12+Math.random()*64});
+  while(pts.length<count)pts.push({x:13+Math.random()*74,y:15+Math.random()*56});
   return pts;
 }
-
-function setTheme(){
-  const t=themes[turn];
-  document.getElementById("turnLabel").textContent=`TURN ${turn+1} / 6`;
-  document.getElementById("themeName").textContent=t.name;
-  document.getElementById("themeDesc").textContent=t.desc;
-  document.getElementById("difficulty").textContent=turn<5?"STATIC":"MOVING";
-}
-
-function spawn(){
-  nodeLayer.innerHTML="";
-  drawn=[];currentNodes=[];
-  document.getElementById("selectedCount").textContent="0 CHAIN";
+function spawn(fixedTutorial=false){
+  nodeLayer.innerHTML="";drawn=[];currentNodes=[];
   document.querySelectorAll(".recipe").forEach(x=>x.classList.remove("possible","matched"));
-  const nodeCounts=[6,7,8,8,9,10];
-  const nodeCount=nodeCounts[turn]||10;
-  const pool=[];
-  while(pool.length<nodeCount){ pool.push(...shuffled(skills)); }
-  const picks=pool.slice(0,nodeCount);
-  const pts=randomPoints(nodeCount);
-
+  let picks,pts;
+  if(fixedTutorial){
+    picks=[
+      {name:"声響",type:"voice"},{name:"声響",type:"voice"},{name:"律動",type:"rhythm"},
+      {name:"華耀",type:"glory"},{name:"声響",type:"voice"}
+    ];
+    pts=[{x:24,y:37},{x:53,y:30},{x:74,y:48},{x:34,y:62},{x:67,y:67}];
+  }else{
+    const nodeCounts=[7,8,8,9,10];
+    const nodeCount=nodeCounts[turn]||9;
+    const pool=[];while(pool.length<nodeCount)pool.push(...shuffled(skills));
+    picks=pool.slice(0,nodeCount);pts=randomPoints(nodeCount);
+  }
   picks.forEach((s,i)=>{
-    const el=document.createElement("div");
-    el.className=`node ${s.type}`;
-    if(nodeCount>=9) el.classList.add("compact");
-    else if(nodeCount>=8) el.classList.add("medium");
-    el.style.left=pts[i].x+"%";
-    el.style.top=pts[i].y+"%";
-    el.innerHTML="";
-    el.dataset.name=s.name;
-    el.dataset.type=s.type;
-
-    // Normal play is static. Only the last 3 turns move, and slowly.
-    const moving=turn>=5;
+    const el=document.createElement("div");el.className=`node ${s.type}`;
+    if(picks.length>=9)el.classList.add("compact");else if(picks.length>=8)el.classList.add("medium");
+    el.style.left=pts[i].x+"%";el.style.top=pts[i].y+"%";el.dataset.name=s.name;el.dataset.type=s.type;
+    const moving=!fixedTutorial&&turn===TOTAL_TURNS-1;
     el.dataset.moving=moving?"1":"0";
-    const speed=moving?(0.004+(turn-5)*0.0025):0;
-    const a=Math.random()*Math.PI*2;
-    el._vx=Math.cos(a)*speed;
-    el._vy=Math.sin(a)*speed;
-    el._px=pts[i].x;el._py=pts[i].y;
-
-    nodeLayer.appendChild(el);
-    currentNodes.push(el);
+    const speed=moving?0.004:0,a=Math.random()*Math.PI*2;
+    el._vx=Math.cos(a)*speed;el._vy=Math.sin(a)*speed;el._px=pts[i].x;el._py=pts[i].y;
+    nodeLayer.appendChild(el);currentNodes.push(el);
   });
   resizeCanvas();
 }
-
 function nodeCenter(el){
   const gr=game.getBoundingClientRect(),r=el.getBoundingClientRect();
-  return{x:r.left-gr.left+r.width/2,y:r.top-gr.top+r.height/2}
+  return{x:r.left-gr.left+r.width/2,y:r.top-gr.top+r.height/2};
 }
 function drawLines(temp){
   const w=canvas.width/devicePixelRatio,h=canvas.height/devicePixelRatio;
-  ctx.clearRect(0,0,w,h);
-  if(!drawn.length)return;
-
-  const pts=drawn.map(nodeCenter);
-  if(temp) pts.push(temp);
-  if(pts.length<2)return;
-
-  // Core luminous "existence wave"
+  ctx.clearRect(0,0,w,h);if(!drawn.length)return;
+  const pts=drawn.map(nodeCenter);if(temp)pts.push(temp);if(pts.length<2)return;
   const grad=ctx.createLinearGradient(0,0,w,h);
-  grad.addColorStop(0,"rgba(110,225,255,.98)");
-  grad.addColorStop(.45,"rgba(220,160,255,.98)");
-  grad.addColorStop(1,"rgba(255,235,150,.98)");
-
-  ctx.save();
-  ctx.lineCap="round";ctx.lineJoin="round";
-
-  // broad aura
-  ctx.beginPath();
-  pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-  ctx.strokeStyle="rgba(190,150,255,.28)";
-  ctx.lineWidth=15;
-  ctx.shadowColor="rgba(180,125,255,.95)";
-  ctx.shadowBlur=14;
-  ctx.stroke();
-
-  // bright core
-  ctx.beginPath();
-  pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-  ctx.strokeStyle=grad;
-  ctx.lineWidth=4.5;
-  ctx.shadowColor="rgba(125,225,255,.95)";
-  ctx.shadowBlur=7;
-  ctx.stroke();
-
-  // sparkling particles distributed along the traced route
-  const now=performance.now()/180;
-  for(let i=0;i<pts.length-1;i++){
-    const a=pts[i],b=pts[i+1];
-    const len=Math.hypot(b.x-a.x,b.y-a.y);
-    const count=Math.max(1,Math.floor(len/42));
-    for(let j=0;j<count;j++){
-      const t=(j/count + (now*.045))%1;
-      const x=a.x+(b.x-a.x)*t;
-      const y=a.y+(b.y-a.y)*t;
-      const pulse=.55+.45*Math.sin(now+j*1.7+i);
-      const r=1.2+2.0*pulse;
-      ctx.beginPath();
-      ctx.arc(x,y,r,0,Math.PI*2);
-      ctx.fillStyle=`rgba(255,255,255,${.55+.4*pulse})`;
-      ctx.shadowColor="rgba(220,190,255,1)";
-      ctx.shadowBlur=5;
-      ctx.fill();
-    }
-  }
+  grad.addColorStop(0,"rgba(110,225,255,.98)");grad.addColorStop(.45,"rgba(220,160,255,.98)");grad.addColorStop(1,"rgba(255,235,150,.98)");
+  ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.strokeStyle="rgba(190,150,255,.25)";ctx.lineWidth=14;ctx.shadowColor="rgba(180,125,255,.9)";ctx.shadowBlur=12;ctx.stroke();
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  ctx.strokeStyle=grad;ctx.lineWidth=4.5;ctx.shadowColor="rgba(125,225,255,.95)";ctx.shadowBlur=6;ctx.stroke();
   ctx.restore();
-}function localPos(e){
-  const r=game.getBoundingClientRect();
-  return{x:e.clientX-r.left,y:e.clientY-r.top};
 }
+function posFromClient(x,y){const r=game.getBoundingClientRect();return{x:x-r.left,y:y-r.top}}
 function hitNode(pos){
   const gr=game.getBoundingClientRect();
-  for(const el of currentNodes){
-    const r=el.getBoundingClientRect();
-    const cx=r.left-gr.left+r.width/2,cy=r.top-gr.top+r.height/2;
-    if(Math.hypot(pos.x-cx,pos.y-cy)<r.width*.58)return el;
-  }
+  return currentNodes.find(el=>{const r=el.getBoundingClientRect(),cx=r.left-gr.left+r.width/2,cy=r.top-gr.top+r.height/2;return Math.hypot(pos.x-cx,pos.y-cy)<r.width*.58});
 }
-
-function containsSeq(route, seq){
-  outer: for(let i=0;i<=route.length-seq.length;i++){
-    for(let j=0;j<seq.length;j++) if(route[i+j]!==seq[j]) continue outer;
+function containsSeq(route,seq){
+  outer:for(let i=0;i<=route.length-seq.length;i++){
+    for(let j=0;j<seq.length;j++)if(route[i+j]!==seq[j])continue outer;
     return true;
-  }
-  return false;
+  }return false;
 }
-function isPrefixAnywhere(route, seq){
+function isPrefixAnywhere(route,seq){
   if(!route.length)return false;
   const max=Math.min(route.length,seq.length);
   for(let len=1;len<=max;len++){
     const tail=route.slice(-len);
-    if(tail.every((v,i)=>v===seq[i])) return true;
-  }
-  return false;
+    if(tail.every((v,i)=>v===seq[i]))return true;
+  }return false;
 }
-function matchedRecipes(route){
-  return recipes.filter(r=>containsSeq(route,r.seq));
-}
+function matchedRecipes(route){return selectedRecipes.filter(r=>containsSeq(route,r.seq))}
 function updateComboUI(){
   const route=drawn.map(n=>n.dataset.type);
   document.querySelectorAll(".recipe").forEach(el=>{
     el.classList.remove("possible","matched");
-    const r=recipes.find(x=>x.name===el.dataset.recipe);
-    if(!r)return;
-    if(containsSeq(route,r.seq)) el.classList.add("matched");
-    else if(isPrefixAnywhere(route,r.seq)) el.classList.add("possible");
+    const r=selectedRecipes.find(x=>x.name===el.dataset.recipe);if(!r)return;
+    if(containsSeq(route,r.seq))el.classList.add("matched");
+    else if(isPrefixAnywhere(route,r.seq))el.classList.add("possible");
   });
 }
-
 function addNode(el){
-  if(drawn.includes(el))return;
-  drawn.push(el);el.classList.add("sel");
-  document.getElementById("selectedCount").textContent=`${drawn.length} CHAIN`;
-  updateComboUI();
-  drawLines();
+  if(!el||drawn.includes(el))return;
+  drawn.push(el);el.classList.add("sel");updateComboUI();drawLines();
 }
-
-
-
-const touchSurface=document.getElementById("touchSurface");
-
-function posFromClient(clientX,clientY){
-  const r=game.getBoundingClientRect();
-  return {x:clientX-r.left,y:clientY-r.top};
-}
-function beginSelection(clientX,clientY){
+function beginSelection(x,y){
   if(!active)return;
-  dragging=true;
-  keepLiveVideoPlaying();
-  const pos=posFromClient(clientX,clientY);
-  const n=hitNode(pos);
-  if(n)addNode(n);
-  drawLines(pos);
+  dragging=true;keepLiveVideoPlaying();
+  const p=posFromClient(x,y),n=hitNode(p);if(n)addNode(n);drawLines(p);
 }
-let lastTraceMove=0;
-function moveSelection(clientX,clientY){
+function moveSelection(x,y){
   if(!active||!dragging)return;
-  const now=performance.now();
-  if(now-lastTraceMove<32)return;
-  lastTraceMove=now;
-  const pos=posFromClient(clientX,clientY);
-  const n=hitNode(pos);
-  if(n)addNode(n);
-  drawLines(pos);
+  const now=performance.now();if(now-lastTraceMove<32)return;lastTraceMove=now;
+  const p=posFromClient(x,y),n=hitNode(p);if(n)addNode(n);drawLines(p);
 }
 function endSelection(){
   if(!active||!dragging)return;
-  dragging=false;
-  drawLines();
-  if(drawn.length>0)finishTurn();
+  dragging=false;drawLines();if(drawn.length)finishTurn();
+}
+touchSurface.addEventListener("touchstart",e=>{if(!active||!e.touches.length)return;e.preventDefault();const t=e.touches[0];beginSelection(t.clientX,t.clientY)},{passive:false});
+touchSurface.addEventListener("touchmove",e=>{if(!active||!dragging||!e.touches.length)return;e.preventDefault();const t=e.touches[0];moveSelection(t.clientX,t.clientY)},{passive:false});
+touchSurface.addEventListener("touchend",e=>{if(!dragging)return;e.preventDefault();endSelection()},{passive:false});
+touchSurface.addEventListener("mousedown",e=>{if(!active)return;e.preventDefault();beginSelection(e.clientX,e.clientY)});
+addEventListener("mousemove",e=>{if(!dragging)return;e.preventDefault();moveSelection(e.clientX,e.clientY)});
+addEventListener("mouseup",e=>{if(!dragging)return;e.preventDefault();endSelection()});
+
+function fireFlash(){waveFlash.classList.remove("fire");void waveFlash.offsetWidth;waveFlash.classList.add("fire")}
+function showCutin(level,moveName,gained,route,onDone){
+  level=Math.max(1,Math.min(4,level));
+  cutinOverlay.className=`level${level}`;
+  cutinImage.src=`cutin_${level}.png`;
+  document.getElementById("cutinMoveName").textContent=moveName;
+  document.getElementById("cutinGainScore").textContent=`+${gained.toLocaleString()}`;
+  document.getElementById("cutinRoute").textContent=route;
+  fireFlash();
+  setTimeout(()=>{
+    cutinOverlay.style.display="block";cutinOverlay.classList.add("enter");
+    const hold=level===4?900:(level===3?700:560);
+    setTimeout(()=>{
+      cutinOverlay.classList.remove("enter");cutinOverlay.classList.add("exit");
+      setTimeout(()=>{
+        cutinOverlay.style.display="none";cutinOverlay.className="";
+        if(onDone)onDone();
+      },190);
+    },hold);
+  },70);
 }
 
-/* iPhone / iPad: use native touch events on a dedicated transparent layer. */
-touchSurface.addEventListener("touchstart",e=>{
-  if(!active||!e.touches.length)return;
-  e.preventDefault();
-  const t=e.touches[0];
-  beginSelection(t.clientX,t.clientY);
-},{passive:false});
-
-touchSurface.addEventListener("touchmove",e=>{
-  if(!active||!dragging||!e.touches.length)return;
-  e.preventDefault();
-  const t=e.touches[0];
-  moveSelection(t.clientX,t.clientY);
-},{passive:false});
-
-touchSurface.addEventListener("touchend",e=>{
-  if(!dragging)return;
-  e.preventDefault();
-  endSelection();
-},{passive:false});
-
-touchSurface.addEventListener("touchcancel",e=>{
-  if(!dragging)return;
-  e.preventDefault();
-  endSelection();
-},{passive:false});
-
-/* PC: mouse fallback for the same input surface. */
-touchSurface.addEventListener("mousedown",e=>{
-  if(!active)return;
-  e.preventDefault();
-  beginSelection(e.clientX,e.clientY);
-});
-window.addEventListener("mousemove",e=>{
-  if(!dragging)return;
-  e.preventDefault();
-  moveSelection(e.clientX,e.clientY);
-});
-window.addEventListener("mouseup",e=>{
-  if(!dragging)return;
-  e.preventDefault();
-  endSelection();
-});
-
-function startTurn(){
-  if(active||turn>=6)return;
-  active=true;time=10;drawn=[];
-  setTheme();spawn();
-  document.getElementById("countdown").textContent="10";
-
+function startTutorialTrace(){
+  document.getElementById("turnLabel").textContent="TUTORIAL";
+  document.getElementById("themeName").textContent="COMBO TEST";
+  document.getElementById("countdown").textContent="∞";
+  tutorialHint.textContent="下のCOMBO SETを確認し、《声響》→《声響》と2つなぞって SHOUT を発動";
+  tutorialHint.style.display="block";
+  spawn(true);active=true;
+}
+function tutorialFail(){
+  active=false;
+  tutorialHint.textContent="もう一度。《声響》→《声響》の順になぞしてください";
+  setTimeout(()=>{spawn(true);active=true},450);
+}
+function startTutorialStory(){
+  tutorialHint.style.display="none";
+  storyStep=0;
+  const steps=[
+    ["試験官","……凄まじい歌力だ！"],
+    ["試験官","もっと！"],
+    ["凛","……言われなくても"]
+  ];
+  function show(){
+    const s=steps[storyStep];storySpeaker.textContent=s[0];storyText.textContent=s[1];storyOverlay.style.display="flex";
+  }
+  storyOverlay.onclick=()=>{
+    storyStep++;
+    if(storyStep>=steps.length){
+      storyOverlay.style.display="none";
+      const tc=document.getElementById("tutorialComplete");tc.style.display="flex";
+      setTimeout(()=>{tc.style.display="none";tutorialMode=false;tutorialPhase="done";startMainGame()},900);
+    }else show();
+  };
+  show();
+}
+function beginTurnAfterHand(){
+  active=true;time=TURN_TIME;drawn=[];setTheme();spawn(false);
+  document.getElementById("countdown").textContent=String(TURN_TIME);
   timer=setInterval(()=>{
-    time-=0.1;
-    document.getElementById("countdown").textContent=String(Math.max(1,Math.ceil(time)));
-    if(time<=0){
-      document.getElementById("countdown").textContent="0";
-      finishTurn();
-    }
+    time-=0.1;document.getElementById("countdown").textContent=String(Math.max(1,Math.ceil(time)));
+    if(time<=0){document.getElementById("countdown").textContent="0";finishTurn()}
   },100);
 }
-
 function finishTurn(){
-  if(!active)return;
-  active=false;
-  if(timer){clearInterval(timer);timer=null}
+  if(!active)return;active=false;if(timer){clearInterval(timer);timer=null}
+  const types=drawn.map(n=>n.dataset.type),matches=matchedRecipes(types);
 
-  const types=drawn.map(n=>n.dataset.type);
-  const t=themes[turn];
-  const matches=matchedRecipes(types);
+  if(tutorialMode&&tutorialPhase==="trace"){
+    if(!matches.some(r=>r.name==="SHOUT")){tutorialFail();return}
+    const gained=12000;
+    score+=gained;document.getElementById("score").textContent=score.toLocaleString();
+    nodeLayer.innerHTML="";
+    showCutin(1,"SHOUT",gained,"声響 → 声響",startTutorialStory);
+    return;
+  }
 
-  let base=types.length*7000;
-  let mult=1;
-  if(t.type==="any") mult*=1+(Math.max(0,types.length-2)*.12);
-  else if(types.includes(t.type)) mult*=t.mult;
-
-  // Each equipped combo can trigger once per traced route.
-  matches.forEach(r=>{ mult*=r.mult; });
+  const t=themes[turn]||themes[0];
+  let base=types.length*7000,mult=1;
+  if(t.type==="any")mult*=1+(Math.max(0,types.length-2)*.12);
+  else if(types.includes(t.type))mult*=t.mult;
+  matches.forEach(r=>mult*=r.mult);
   const gained=Math.round(base*mult);
-  score+=gained;
-  audience=Math.min(100,audience+Math.round(types.length*1.5+matches.length*7));
-
+  score+=gained;audience=Math.min(100,audience+Math.round(types.length*1.5+matches.length*7));
   document.getElementById("score").textContent=score.toLocaleString();
   document.getElementById("audience").textContent=audience+"%";
-
-  const completedTurn=turn+1;
-  turn++;
-  nodeLayer.innerHTML="";
-
-  const fireFlash=()=>{
-    waveFlash.classList.remove("fire");
-    void waveFlash.offsetWidth;
-    waveFlash.classList.add("fire");
-  };
+  turn++;nodeLayer.innerHTML="";
 
   const goNext=()=>{
     document.querySelectorAll(".recipe").forEach(x=>x.classList.remove("possible","matched"));
-    if(turn>=6){
+    if(turn>=TOTAL_TURNS){
       document.getElementById("turnLabel").textContent="LIVE CLEAR";
       document.getElementById("countdown").textContent="END";
       document.getElementById("themeName").textContent="FINAL RESULT";
-      document.getElementById("themeDesc").textContent="6ターン終了";
       document.getElementById("finalScoreValue").textContent=score.toLocaleString();
-      document.getElementById("finalScoreOverlay").style.display="flex";
-    }else{
-      setTimeout(startTurn,110);
-    }
+      finalScoreOverlay.style.display="flex";
+    }else setTimeout(()=>openHand(false),300);
   };
 
-  // Performance insert is a reward only when one or more combo skills succeed.
   if(matches.length){
     const top=[...matches].sort((a,b)=>b.seq.length-a.seq.length)[0];
-    document.getElementById("cutinMoveName").textContent =
-      matches.length>1 ? `${top.name}  /  ${matches.length} COMBO` : top.name;
-    document.getElementById("cutinGainScore").textContent=`+${gained.toLocaleString()}`;
-    document.getElementById("cutinRoute").textContent=types.map(x=>x==="voice"?"声響":x==="rhythm"?"律動":"華耀").join(" → ");
-
-    // Static PNG cut-in. The number of combo skills triggered decides the artwork.
-    const cutinLevel=Math.min(4,matches.length);
-    const holdMs=[0,560,680,820,1180][cutinLevel];
-    cutinOverlay.className=`level${cutinLevel}`;
-    cutinImage.src=`cutin_${cutinLevel}.png`;
-
-    fireFlash();
-    setTimeout(()=>{
-      cutinOverlay.style.display="flex";
-      cutinOverlay.classList.add("enter");
-      setTimeout(()=>{
-        cutinOverlay.classList.remove("enter");
-        cutinOverlay.classList.add("exit");
-        setTimeout(()=>{
-          cutinOverlay.style.display="none";
-          cutinOverlay.className="";
-          fireFlash();
-          goNext();
-        },180);
-      },holdMs);
-    },70);
+    const route=types.map(x=>waveJP[x]).join(" → ");
+    showCutin(matches.length,top.name,gained,route,goNext);
   }else{
-    const no=q=>document.getElementById(q);
-    no("noComboOverlay").style.display="flex";
-    setTimeout(()=>{no("noComboOverlay").style.display="none";goNext();},520);
+    document.getElementById("noComboOverlay").style.display="flex";
+    setTimeout(()=>{document.getElementById("noComboOverlay").style.display="none";goNext()},520);
   }
 }
 
 let lastAnimFrame=0;
 function animateNodes(now){
-  if(now-lastAnimFrame<32){
-    requestAnimationFrame(animateNodes);
-    return;
-  }
-  const dt=Math.min(48,now-lastMoveTime);
-  lastMoveTime=now;
-  lastAnimFrame=now;
+  if(now-lastAnimFrame<32){requestAnimationFrame(animateNodes);return}
+  const dt=Math.min(48,now-lastMoveTime);lastMoveTime=now;lastAnimFrame=now;
   if(active){
-    for(const el of currentNodes){
-      if(el.dataset.moving!=="1"||drawn.includes(el))continue;
+    currentNodes.forEach(el=>{
+      if(el.dataset.moving!=="1"||drawn.includes(el))return;
       el._px+=el._vx*dt;el._py+=el._vy*dt;
-      if(el._px<10){el._px=10;el._vx=Math.abs(el._vx)}
-      if(el._px>90){el._px=90;el._vx=-Math.abs(el._vx)}
-      if(el._py<12){el._py=12;el._vy=Math.abs(el._vy)}
-      if(el._py>76){el._py=76;el._vy=-Math.abs(el._vy)}
+      if(el._px<10){el._px=10;el._vx=Math.abs(el._vx)}if(el._px>90){el._px=90;el._vx=-Math.abs(el._vx)}
+      if(el._py<13){el._py=13;el._vy=Math.abs(el._vy)}if(el._py>74){el._py=74;el._vy=-Math.abs(el._vy)}
       el.style.left=el._px+"%";el.style.top=el._py+"%";
-    }
-    if(dragging) drawLines();
+    });
+    if(dragging)drawLines();
   }
   requestAnimationFrame(animateNodes);
 }
 requestAnimationFrame(animateNodes);
 
-function preGameCountdown(){
+function preGameCountdown(cb){
   keepLiveVideoPlaying();
-  const overlay=document.getElementById("preCountdown");
-  overlay.style.display="flex";
-  overlay.style.background="rgba(3,6,14,.48)";
-  const seq=["3","2","1","LIVE START!"];
-  let i=0;overlay.textContent=seq[i];
+  const overlay=document.getElementById("preCountdown");overlay.style.display="flex";overlay.style.background="rgba(3,6,14,.48)";
+  const seq=["3","2","1","LIVE START!"];let i=0;overlay.textContent=seq[0];
   const iv=setInterval(()=>{
     i++;
-    if(i>=seq.length){
-      clearInterval(iv);
-      overlay.style.display="none";
-      startTurn();
-      return;
-    }
+    if(i>=seq.length){clearInterval(iv);overlay.style.display="none";cb();return}
     overlay.textContent=seq[i];
-  },650);
+  },560);
+}
+function startMainGame(){
+  turn=0;score=0;audience=20;
+  document.getElementById("score").textContent="0";document.getElementById("audience").textContent="20%";
+  preGameCountdown(()=>openHand(false));
 }
 function resetGame(){
   if(timer){clearInterval(timer);timer=null}
-  active=false;dragging=false;turn=0;score=0;audience=20;drawn=[];
-  document.getElementById("finalScoreOverlay").style.display="none";
-  nodeLayer.innerHTML="";
-  cutinOverlay.style.display="none";
-  finalScoreOverlay.style.display="none";
-  cutinImage.removeAttribute("src");
-  cutinOverlay.className="";
-  waveFlash.classList.remove("fire");
-  document.getElementById("score").textContent="0";
-  document.getElementById("audience").textContent="20%";
-  document.getElementById("countdown").textContent="10";
-  setTheme();
-  setTimeout(preGameCountdown,250);
+  active=false;dragging=false;turn=0;score=0;audience=20;drawn=[];selectedRecipes=[];
+  nodeLayer.innerHTML="";ctx.clearRect(0,0,canvas.width,canvas.height);
+  handOverlay.style.display="none";storyOverlay.style.display="none";tutorialHint.style.display="none";
+  cutinOverlay.style.display="none";finalScoreOverlay.style.display="none";waveFlash.classList.remove("fire");
+  document.getElementById("score").textContent="0";document.getElementById("audience").textContent="20%";
+  document.getElementById("countdown").textContent=String(TURN_TIME);
+  if(tutorialMode){tutorialPhase="hand";setTimeout(()=>openHand(true),250)}
+  else setTimeout(()=>preGameCountdown(()=>openHand(false)),250);
 }
-// Preload all cut-in PNGs so the reward insert does not hitch on first use.
-[1,2,3,4].forEach(i=>{ const img=new Image(); img.src=`cutin_${i}.png`; });
-
 resetBtn.addEventListener("click",resetGame);
-document.getElementById("retryLive").addEventListener("click",()=>{document.getElementById("finalScoreOverlay").style.display="none";resetGame();});
+document.getElementById("retryLive").addEventListener("click",()=>{finalScoreOverlay.style.display="none";tutorialMode=false;resetGame()});
+
+[1,2,3,4].forEach(i=>{const img=new Image();img.src=`cutin_${i}.png`});
 resetGame();
 
 </script>
