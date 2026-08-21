@@ -794,11 +794,31 @@ button{font:inherit}
 
 #postLiveFade{position:absolute;inset:0;z-index:120;background:#000;opacity:0;pointer-events:none;transition:opacity .75s ease}
 #retryLive{display:none!important}
+
+/* v25.2 DEBUG NAV */
+#devDebugLive{
+  position:absolute;z-index:130;top:max(4px,env(safe-area-inset-top));left:50%;
+  transform:translateX(-50%);display:flex;gap:3px;padding:4px 5px;
+  border-radius:999px;background:rgba(0,0,0,.58);
+  border:1px solid rgba(255,255,255,.12);pointer-events:auto;
+}
+#devDebugLive button{
+  border:0;border-radius:999px;background:rgba(255,255,255,.08);color:#fff;
+  padding:4px 7px;font-size:8px;font-weight:900;white-space:nowrap;
+}
+
 </style>
 </head>
 <body>
 <div id="app">
   <div id="game">
+
+    <div id="devDebugLive">
+      <button id="dbgToAdv">ADV</button>
+      <button id="dbgToLive">LIVE</button>
+      <button id="dbgToAfter">AFTER</button>
+    </div>
+
     <video id="liveBg" autoplay muted loop playsinline preload="auto" aria-hidden="true">
       <source src="play_bg.mp4" type="video/mp4">
     </video>
@@ -969,7 +989,7 @@ function story(){const s=[["試験官","……凄まじい歌力だ！"],["試�
 function pre(cb){const o=$("preCountdown"),s=["3","2","1","LIVE START!"];let i=0;o.style.display="flex";o.textContent=s[0];const iv=setInterval(()=>{i++;if(i>=s.length){clearInterval(iv);o.style.display="none";cb()}else o.textContent=s[i]},520)}
 let la=0;function anim(now){if(now-la>32){la=now;if(active){currentNodes.forEach(e=>{if(e.dataset.moving!=="1"||drawn.includes(e))return;e._px+=e._vx*32;e._py+=e._vy*32;if(e._px<10||e._px>90)e._vx*=-1;if(e._py<13||e._py>74)e._vy*=-1;e.style.left=e._px+"%";e.style.top=e._py+"%"});if(dragging)draw()}}requestAnimationFrame(anim)}requestAnimationFrame(anim);
 function reset(){clearInterval(timer);timer=null;turn=0;score=0;audience=20;active=false;resolved=false;drawn=[];$("score").textContent="0";$("audience").textContent="20%";$("finalScoreOverlay").style.display="none";$("handOverlay").style.display="none";$("comboDock").classList.remove("selecting");tutorial?setTimeout(()=>openTurn(true),200):setTimeout(()=>pre(()=>openTurn(false)),200)}
-$("resetBtn").onclick=reset;$("retryLive").onclick=()=>{tutorial=false;reset()};[1,2,3,4].forEach(i=>{const im=new Image();im.src=`cutin_${i}.png`});reset();
+$("resetBtn").onclick=reset;$("retryLive").onclick=()=>{tutorial=false;reset()};[1,2,3,4].forEach(i=>{const im=new Image();im.src=`cutin_${i}.png`});$("dbgToAdv").onclick=()=>location.href="index.html?v=252";$("dbgToLive").onclick=()=>location.href="live.html?v=252";$("dbgToAfter").onclick=()=>location.href="adv_after.html?v=252";reset();
 
 </script>
 </body>

@@ -31,10 +31,14 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:
 #end .title{font-size:29px;font-weight:900;letter-spacing:.13em}
 #end .sub{font-size:13px;line-height:1.8;opacity:.65;margin-top:18px}
 #tap{position:absolute;inset:0;z-index:40}
+
+#devDebugAfter{position:absolute;z-index:100;top:max(6px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);display:flex;gap:4px;padding:4px 5px;border-radius:999px;background:rgba(0,0,0,.64);border:1px solid rgba(255,255,255,.12)}
+#devDebugAfter button{border:0;border-radius:999px;background:rgba(255,255,255,.08);color:#fff;padding:4px 7px;font-size:8px;font-weight:900}
+
 </style>
 </head>
 <body>
-<div id="game">
+<div id="game"><div id="devDebugAfter"><button id="dbgAfterAdv">ADV</button><button id="dbgAfterLive">LIVE</button><button id="dbgAfterReload">RELOAD</button></div>
  <div id="bg"></div><div id="shade"></div>
  <img id="mina" class="char" src="assets/mina/mina_02.png">
  <img id="rin" class="char" src="assets/rin/rin_01.png">
@@ -81,6 +85,6 @@ function render(){
 }
 function next(){if(locked)return;i=Math.min(i+1,scenes.length-1);render()}
 q("tap").addEventListener("click",next);
-render();setTimeout(()=>locked=false,850);
+q("dbgAfterAdv").onclick=()=>location.href="index.html?v=252";q("dbgAfterLive").onclick=()=>location.href="live.html?v=252";q("dbgAfterReload").onclick=()=>{const u=new URL(location.href);u.searchParams.set("_r",Date.now());location.href=u};render();setTimeout(()=>locked=false,850);
 </script>
 </body></html>
