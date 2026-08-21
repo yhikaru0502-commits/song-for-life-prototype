@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA ADV v23</title>
+<title>HARMONIA ADV v24</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03050a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
@@ -225,7 +225,7 @@ function render(s, instant=false){
   if(s.mode==="liveStart"){
     q("liveStartText").textContent="TUTORIAL START";
     q("liveStartOverlay").style.display="flex";
-    setTimeout(()=>{ window.location.href="live.html?tutorial=1&v=23"; },900);
+    setTimeout(()=>{ window.location.href="live.html?tutorial=1&v=24"; },900);
   }
   if(s.flash){flash.classList.remove("fire");void flash.offsetWidth;flash.classList.add("fire")}
 }
@@ -346,8 +346,8 @@ q("debugClose").addEventListener("click",()=>q("debugMenu").style.display="none"
 document.querySelectorAll("[data-tap]").forEach(btn=>{
   btn.addEventListener("click",()=>jumpToTap(Number(btn.dataset.tap)));
 });
-q("debugTutorial").addEventListener("click",()=>{window.location.href="live.html?tutorial=1&v=23";});
-q("debugLive").addEventListener("click",()=>{window.location.href="live.html?v=23";});
+q("debugTutorial").addEventListener("click",()=>{window.location.href="live.html?tutorial=1&v=24";});
+q("debugLive").addEventListener("click",()=>{window.location.href="live.html?v=24";});
 
 q("title").addEventListener("click",startGame);
 q("title").addEventListener("touchend",e=>{

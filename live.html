@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>HARMONIA LIVE v23</title>
+<title>HARMONIA LIVE v24</title>
 <style>
 :root {
   --glass:rgba(8,12,24,.48);
@@ -421,7 +421,7 @@ button{font:inherit}
 }
 
 
-/* v23: combo-card hand + tutorial */
+/* v24: combo-card hand + tutorial */
 #handOverlay{
   position:absolute;inset:0;z-index:76;display:none;
   background:linear-gradient(180deg,rgba(3,6,14,.22),rgba(3,6,14,.78) 52%,rgba(3,6,14,.94));
@@ -488,6 +488,22 @@ button{font:inherit}
   font-size:28px;pointer-events:none;
 }
 
+
+/* v24 GAMEPLAY V1 */
+#handOverlay{background:linear-gradient(180deg,rgba(3,6,14,.03),rgba(3,6,14,.10) 48%,rgba(3,6,14,.94) 70%)!important;pointer-events:none!important}
+#handPanel{pointer-events:auto!important;max-height:46%;overflow:auto}
+.handCard{min-height:91px!important}.handCard .cardEffect{font-size:7px;line-height:1.25;margin-top:5px;color:rgba(255,255,255,.68)}
+.handCard.rinCard{border-color:rgba(255,75,105,.62);background:rgba(62,10,22,.78)}
+.recipe.uniqueRecipe{border-color:rgba(255,75,105,.62)}
+#uniqueFx{position:absolute;inset:0;z-index:88;display:none;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(circle,rgba(150,0,30,.22),rgba(10,0,8,.12) 52%,rgba(95,0,18,.36))}
+#uniqueFx:before,#uniqueFx:after{content:"";position:absolute;left:-15%;width:130%;height:2px;background:#ff5575;box-shadow:0 0 14px #ff174f,0 0 32px #ff174f;transform:rotate(-13deg)}
+#uniqueFx:before{top:39%}#uniqueFx:after{top:61%;transform:rotate(11deg)}
+#uniqueFx.fire{animation:uniquePulse .48s ease-out}
+#uniqueFxBox{text-align:center;text-shadow:0 0 18px rgba(255,0,60,.9)}
+#uniqueFxLabel{font-size:9px;font-weight:900;letter-spacing:.22em;color:#ff9caf}
+#uniqueFxName{font-size:25px;font-weight:1000;margin-top:4px}
+#uniqueFxSub{font-size:9px;margin-top:5px;color:rgba(255,255,255,.78)}
+@keyframes uniquePulse{0%{opacity:0;transform:scale(1.07)}25%{opacity:1}100%{opacity:0;transform:scale(1)}}
 </style>
 </head>
 <body>
@@ -566,6 +582,8 @@ button{font:inherit}
 
     <div id="tutorialHint"></div>
 
+
+    <div id="uniqueFx"><div id="uniqueFxBox"><div id="uniqueFxLabel">RIN UNIQUE SKILL / ACTIVATE</div><div id="uniqueFxName"></div><div id="uniqueFxSub"></div></div></div>
     <div id="storyOverlay">
       <div id="storyBox">
         <div id="storySpeaker"></div>
@@ -605,431 +623,62 @@ button{font:inherit}
 <script>
 
 const liveBg=document.getElementById("liveBg");
-function keepLiveVideoPlaying(){
-  if(!liveBg)return;
-  const p=liveBg.play();
-  if(p&&typeof p.catch==="function")p.catch(()=>{});
-}
-
-const waveIcon={
-  voice:"assets/wave/voice_normal.png",
-  rhythm:"assets/wave/rhythm_normal.png",
-  glory:"assets/wave/glory_normal.png"
-};
-const waveJP={voice:"声響",rhythm:"律動",glory:"華耀"};
-
-const skills=[
-  {name:"声響",type:"voice"},{name:"声響",type:"voice"},{name:"声響",type:"voice"},
-  {name:"律動",type:"rhythm"},{name:"律動",type:"rhythm"},{name:"華耀",type:"glory"}
-];
-
-/* Prototype combo pool. Names/rates can be tuned later. */
+const waveIcon={voice:"assets/wave/voice_normal.png",rhythm:"assets/wave/rhythm_normal.png",glory:"assets/wave/glory_normal.png"},waveJP={voice:"声",rhythm:"律",glory:"華"};
+const TOTAL_TURNS=5,TURN_TIME=30;
 const comboPool=[
-  {seq:["voice","voice"],name:"SHOUT",mult:1.35},
-  {seq:["voice","voice","voice"],name:"SCREAM",mult:1.75},
-  {seq:["voice","voice","rhythm"],name:"BREAK BEAT",mult:1.65},
-  {seq:["voice","glory","voice"],name:"HOWLING",mult:1.80},
-  {seq:["rhythm","rhythm"],name:"PULSE",mult:1.30},
-  {seq:["glory","voice"],name:"SPARK",mult:1.38},
-  {seq:["rhythm","voice","rhythm"],name:"RUSH",mult:1.62},
-  {seq:["voice","voice","glory","voice"],name:"REBELLION",mult:2.05}
-];
-
-const TOTAL_TURNS=5;
-const TURN_TIME=30;
-const themes=[
-  {name:"声響増幅",desc:"《声響》を中心にコンボを組め",type:"voice",mult:1.55},
-  {name:"律動干渉",desc:"《律動》を経由する複合コンボが有効",type:"rhythm",mult:1.45},
-  {name:"華耀共鳴",desc:"《華耀》を含むルートで存在波が輝く",type:"glory",mult:1.45},
-  {name:"複合共鳴",desc:"複数コンボを一本のルートに仕込め",type:"any",mult:1.55},
-  {name:"臨界声響",desc:"最長ルートで最大出力を狙え",type:"voice",mult:1.85}
-];
-
-const game=document.getElementById("game");
-const nodeLayer=document.getElementById("nodeLayer");
-const canvas=document.getElementById("lineLayer");
-const ctx=canvas.getContext("2d");
-const resetBtn=document.getElementById("resetBtn");
-const cutinOverlay=document.getElementById("cutinOverlay");
-const cutinImage=document.getElementById("cutinImage");
-const finalScoreOverlay=document.getElementById("finalScoreOverlay");
-const waveFlash=document.getElementById("waveFlash");
-const touchSurface=document.getElementById("touchSurface");
-const handOverlay=document.getElementById("handOverlay");
-const handGrid=document.getElementById("handGrid");
-const handGuide=document.getElementById("handGuide");
-const handSetBtn=document.getElementById("handSetBtn");
-const handCount=document.getElementById("handCount");
-const tutorialHint=document.getElementById("tutorialHint");
-const storyOverlay=document.getElementById("storyOverlay");
-const storySpeaker=document.getElementById("storySpeaker");
-const storyText=document.getElementById("storyText");
-
-let turn=0,score=0,audience=20,active=false,time=TURN_TIME,timer=null;
-let currentNodes=[],drawn=[],dragging=false,lastMoveTime=performance.now(),lastTraceMove=0;
-let selectedRecipes=[],handCards=[],handSelection=[];
-let tutorialMode=new URLSearchParams(location.search).get("tutorial")==="1";
-let tutorialPhase=tutorialMode?"hand":"off";
-let storyStep=0;
-
-function shuffled(a){return [...a].sort(()=>Math.random()-.5)}
-function seqHTML(seq,cls="comboWave"){
-  return seq.map((t,i)=>`${i?'<span>›</span>':''}<img class="${cls} ${t}" src="${waveIcon[t]}" alt="${waveJP[t]}">`).join("");
-}
-function resizeCanvas(){
-  const r=game.getBoundingClientRect();
-  canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;
-  canvas.style.width=r.width+"px";canvas.style.height=r.height+"px";
-  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);drawLines();
-}
-addEventListener("resize",resizeCanvas);
-
-function setTheme(){
-  const t=themes[turn]||themes[themes.length-1];
-  document.getElementById("turnLabel").textContent=`TURN ${turn+1} / ${TOTAL_TURNS}`;
-  document.getElementById("themeName").textContent=t.name;
-  document.getElementById("themeDesc").textContent=t.desc;
-  document.getElementById("difficulty").textContent=turn<TOTAL_TURNS-1?"STATIC":"MOVING";
-}
-
-function renderComboDock(){
-  const row=document.querySelector("#comboDock .recipeRow");
-  row.innerHTML="";
-  selectedRecipes.forEach(r=>{
-    const el=document.createElement("div");
-    el.className="recipe";el.dataset.recipe=r.name;
-    el.innerHTML=`<div class="recipeName">${r.name}</div><div class="recipeSeq">${seqHTML(r.seq)}</div>`;
-    row.appendChild(el);
-  });
-}
-
-function makeHand(isTutorial=false){
-  handSelection=[];
-  if(isTutorial){
-    const must=["SHOUT","SCREAM","BREAK BEAT","HOWLING","PULSE","SPARK"];
-    handCards=must.map(n=>comboPool.find(r=>r.name===n));
-  }else{
-    handCards=shuffled(comboPool).slice(0,6);
-  }
-  renderHand(isTutorial);
-}
-function renderHand(isTutorial=false){
-  handGrid.innerHTML="";
-  handCards.forEach((r,idx)=>{
-    const b=document.createElement("button");
-    b.className="handCard";
-    if(isTutorial&&tutorialPhase==="hand"&&handSelection.length===0&&r.name==="SHOUT")b.classList.add("forced");
-    if(isTutorial&&tutorialPhase==="hand"&&handSelection.length===0&&r.name!=="SHOUT")b.classList.add("locked");
-    if(handSelection.includes(r))b.classList.add("selected");
-    b.innerHTML=`<div class="pickNo">${handSelection.indexOf(r)+1}</div><div class="cardName">${r.name}</div><div class="cardSeq">${seqHTML(r.seq,"")}</div>`;
-    b.addEventListener("click",()=>{
-      if(isTutorial&&tutorialPhase==="hand"&&handSelection.length===0&&r.name!=="SHOUT")return;
-      toggleHand(r,isTutorial);
-    });
-    handGrid.appendChild(b);
-  });
-  handCount.textContent=`${handSelection.length} / 4 SET`;
-  handSetBtn.disabled=handSelection.length!==4;
-}
-function toggleHand(r,isTutorial){
-  const i=handSelection.indexOf(r);
-  if(i>=0)handSelection.splice(i,1);
-  else if(handSelection.length<4)handSelection.push(r);
-  if(isTutorial&&handSelection.length===1&&handSelection[0].name==="SHOUT"){
-    handGuide.textContent="SHOUTをセット。残り3枚は自由に選んでください";
-  }
-  renderHand(isTutorial);
-}
-handSetBtn.addEventListener("click",()=>{
-  if(handSelection.length!==4)return;
-  selectedRecipes=[...handSelection];
-  renderComboDock();
-  handOverlay.style.display="none";
-  if(tutorialMode&&tutorialPhase==="hand"){
-    tutorialPhase="trace";
-    startTutorialTrace();
-  }else{
-    beginTurnAfterHand();
-  }
-});
-
-function openHand(isTutorial=false){
-  active=false;dragging=false;drawn=[];nodeLayer.innerHTML="";ctx.clearRect(0,0,canvas.width,canvas.height);
-  handOverlay.style.display="block";
-  handGuide.textContent=isTutorial
-    ?"まず《SHOUT》を選び、4つのコンボスキルをセットしてください"
-    :"今回使うコンボスキルを4つ選択";
-  makeHand(isTutorial);
-}
-
-function randomPoints(count){
-  const pts=[];let tries=0;
-  while(pts.length<count&&tries<400){
-    tries++;
-    const p={x:11+Math.random()*78,y:14+Math.random()*58};
-    const minDist=count>=9?12:(count>=8?13.5:15);
-    if(pts.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>minDist))pts.push(p);
-  }
-  while(pts.length<count)pts.push({x:13+Math.random()*74,y:15+Math.random()*56});
-  return pts;
-}
-function spawn(fixedTutorial=false){
-  nodeLayer.innerHTML="";drawn=[];currentNodes=[];
-  document.querySelectorAll(".recipe").forEach(x=>x.classList.remove("possible","matched"));
-  let picks,pts;
-  if(fixedTutorial){
-    picks=[
-      {name:"声響",type:"voice"},{name:"声響",type:"voice"},{name:"律動",type:"rhythm"},
-      {name:"華耀",type:"glory"},{name:"声響",type:"voice"}
-    ];
-    pts=[{x:24,y:37},{x:53,y:30},{x:74,y:48},{x:34,y:62},{x:67,y:67}];
-  }else{
-    const nodeCounts=[7,8,8,9,10];
-    const nodeCount=nodeCounts[turn]||9;
-    const pool=[];while(pool.length<nodeCount)pool.push(...shuffled(skills));
-    picks=pool.slice(0,nodeCount);pts=randomPoints(nodeCount);
-  }
-  picks.forEach((s,i)=>{
-    const el=document.createElement("div");el.className=`node ${s.type}`;
-    if(picks.length>=9)el.classList.add("compact");else if(picks.length>=8)el.classList.add("medium");
-    el.style.left=pts[i].x+"%";el.style.top=pts[i].y+"%";el.dataset.name=s.name;el.dataset.type=s.type;
-    const moving=!fixedTutorial&&turn===TOTAL_TURNS-1;
-    el.dataset.moving=moving?"1":"0";
-    const speed=moving?0.004:0,a=Math.random()*Math.PI*2;
-    el._vx=Math.cos(a)*speed;el._vy=Math.sin(a)*speed;el._px=pts[i].x;el._py=pts[i].y;
-    nodeLayer.appendChild(el);currentNodes.push(el);
-  });
-  resizeCanvas();
-}
-function nodeCenter(el){
-  const gr=game.getBoundingClientRect(),r=el.getBoundingClientRect();
-  return{x:r.left-gr.left+r.width/2,y:r.top-gr.top+r.height/2};
-}
-function drawLines(temp){
-  const w=canvas.width/devicePixelRatio,h=canvas.height/devicePixelRatio;
-  ctx.clearRect(0,0,w,h);if(!drawn.length)return;
-  const pts=drawn.map(nodeCenter);if(temp)pts.push(temp);if(pts.length<2)return;
-  const grad=ctx.createLinearGradient(0,0,w,h);
-  grad.addColorStop(0,"rgba(110,225,255,.98)");grad.addColorStop(.45,"rgba(220,160,255,.98)");grad.addColorStop(1,"rgba(255,235,150,.98)");
-  ctx.save();ctx.lineCap="round";ctx.lineJoin="round";
-  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-  ctx.strokeStyle="rgba(190,150,255,.25)";ctx.lineWidth=14;ctx.shadowColor="rgba(180,125,255,.9)";ctx.shadowBlur=12;ctx.stroke();
-  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-  ctx.strokeStyle=grad;ctx.lineWidth=4.5;ctx.shadowColor="rgba(125,225,255,.95)";ctx.shadowBlur=6;ctx.stroke();
-  ctx.restore();
-}
-function posFromClient(x,y){const r=game.getBoundingClientRect();return{x:x-r.left,y:y-r.top}}
-function hitNode(pos){
-  const gr=game.getBoundingClientRect();
-  return currentNodes.find(el=>{const r=el.getBoundingClientRect(),cx=r.left-gr.left+r.width/2,cy=r.top-gr.top+r.height/2;return Math.hypot(pos.x-cx,pos.y-cy)<r.width*.58});
-}
-function containsSeq(route,seq){
-  outer:for(let i=0;i<=route.length-seq.length;i++){
-    for(let j=0;j<seq.length;j++)if(route[i+j]!==seq[j])continue outer;
-    return true;
-  }return false;
-}
-function isPrefixAnywhere(route,seq){
-  if(!route.length)return false;
-  const max=Math.min(route.length,seq.length);
-  for(let len=1;len<=max;len++){
-    const tail=route.slice(-len);
-    if(tail.every((v,i)=>v===seq[i]))return true;
-  }return false;
-}
-function matchedRecipes(route){return selectedRecipes.filter(r=>containsSeq(route,r.seq))}
-function updateComboUI(){
-  const route=drawn.map(n=>n.dataset.type);
-  document.querySelectorAll(".recipe").forEach(el=>{
-    el.classList.remove("possible","matched");
-    const r=selectedRecipes.find(x=>x.name===el.dataset.recipe);if(!r)return;
-    if(containsSeq(route,r.seq))el.classList.add("matched");
-    else if(isPrefixAnywhere(route,r.seq))el.classList.add("possible");
-  });
-}
-function addNode(el){
-  if(!el||drawn.includes(el))return;
-  drawn.push(el);el.classList.add("sel");updateComboUI();drawLines();
-}
-function beginSelection(x,y){
-  if(!active)return;
-  dragging=true;keepLiveVideoPlaying();
-  const p=posFromClient(x,y),n=hitNode(p);if(n)addNode(n);drawLines(p);
-}
-function moveSelection(x,y){
-  if(!active||!dragging)return;
-  const now=performance.now();if(now-lastTraceMove<32)return;lastTraceMove=now;
-  const p=posFromClient(x,y),n=hitNode(p);if(n)addNode(n);drawLines(p);
-}
-function endSelection(){
-  if(!active||!dragging)return;
-  dragging=false;drawLines();if(drawn.length)finishTurn();
-}
-touchSurface.addEventListener("touchstart",e=>{if(!active||!e.touches.length)return;e.preventDefault();const t=e.touches[0];beginSelection(t.clientX,t.clientY)},{passive:false});
-touchSurface.addEventListener("touchmove",e=>{if(!active||!dragging||!e.touches.length)return;e.preventDefault();const t=e.touches[0];moveSelection(t.clientX,t.clientY)},{passive:false});
-touchSurface.addEventListener("touchend",e=>{if(!dragging)return;e.preventDefault();endSelection()},{passive:false});
-touchSurface.addEventListener("mousedown",e=>{if(!active)return;e.preventDefault();beginSelection(e.clientX,e.clientY)});
-addEventListener("mousemove",e=>{if(!dragging)return;e.preventDefault();moveSelection(e.clientX,e.clientY)});
-addEventListener("mouseup",e=>{if(!dragging)return;e.preventDefault();endSelection()});
-
-function fireFlash(){waveFlash.classList.remove("fire");void waveFlash.offsetWidth;waveFlash.classList.add("fire")}
-function showCutin(level,moveName,gained,route,onDone){
-  level=Math.max(1,Math.min(4,level));
-  cutinOverlay.className=`level${level}`;
-  cutinImage.src=`cutin_${level}.png`;
-  document.getElementById("cutinMoveName").textContent=moveName;
-  document.getElementById("cutinGainScore").textContent=`+${gained.toLocaleString()}`;
-  document.getElementById("cutinRoute").textContent=route;
-  fireFlash();
-  setTimeout(()=>{
-    cutinOverlay.style.display="block";cutinOverlay.classList.add("enter");
-    const hold=level===4?900:(level===3?700:560);
-    setTimeout(()=>{
-      cutinOverlay.classList.remove("enter");cutinOverlay.classList.add("exit");
-      setTimeout(()=>{
-        cutinOverlay.style.display="none";cutinOverlay.className="";
-        if(onDone)onDone();
-      },190);
-    },hold);
-  },70);
-}
-
-function startTutorialTrace(){
-  document.getElementById("turnLabel").textContent="TUTORIAL";
-  document.getElementById("themeName").textContent="COMBO TEST";
-  document.getElementById("countdown").textContent="∞";
-  tutorialHint.textContent="下のCOMBO SETを確認し、《声響》→《声響》と2つなぞって SHOUT を発動";
-  tutorialHint.style.display="block";
-  spawn(true);active=true;
-}
-function tutorialFail(){
-  active=false;
-  tutorialHint.textContent="もう一度。《声響》→《声響》の順になぞしてください";
-  setTimeout(()=>{spawn(true);active=true},450);
-}
-function startTutorialStory(){
-  tutorialHint.style.display="none";
-  storyStep=0;
-  const steps=[
-    ["試験官","……凄まじい歌力だ！"],
-    ["試験官","もっと！"],
-    ["凛","……言われなくても"]
-  ];
-  function show(){
-    const s=steps[storyStep];storySpeaker.textContent=s[0];storyText.textContent=s[1];storyOverlay.style.display="flex";
-  }
-  storyOverlay.onclick=()=>{
-    storyStep++;
-    if(storyStep>=steps.length){
-      storyOverlay.style.display="none";
-      const tc=document.getElementById("tutorialComplete");tc.style.display="flex";
-      setTimeout(()=>{tc.style.display="none";tutorialMode=false;tutorialPhase="done";startMainGame()},900);
-    }else show();
-  };
-  show();
-}
-function beginTurnAfterHand(){
-  active=true;time=TURN_TIME;drawn=[];setTheme();spawn(false);
-  document.getElementById("countdown").textContent=String(TURN_TIME);
-  timer=setInterval(()=>{
-    time-=0.1;document.getElementById("countdown").textContent=String(Math.max(1,Math.ceil(time)));
-    if(time<=0){document.getElementById("countdown").textContent="0";finishTurn()}
-  },100);
-}
-function finishTurn(){
-  if(!active)return;active=false;if(timer){clearInterval(timer);timer=null}
-  const types=drawn.map(n=>n.dataset.type),matches=matchedRecipes(types);
-
-  if(tutorialMode&&tutorialPhase==="trace"){
-    if(!matches.some(r=>r.name==="SHOUT")){tutorialFail();return}
-    const gained=12000;
-    score+=gained;document.getElementById("score").textContent=score.toLocaleString();
-    nodeLayer.innerHTML="";
-    showCutin(1,"SHOUT",gained,"声響 → 声響",startTutorialStory);
-    return;
-  }
-
-  const t=themes[turn]||themes[0];
-  let base=types.length*7000,mult=1;
-  if(t.type==="any")mult*=1+(Math.max(0,types.length-2)*.12);
-  else if(types.includes(t.type))mult*=t.mult;
-  matches.forEach(r=>mult*=r.mult);
-  const gained=Math.round(base*mult);
-  score+=gained;audience=Math.min(100,audience+Math.round(types.length*1.5+matches.length*7));
-  document.getElementById("score").textContent=score.toLocaleString();
-  document.getElementById("audience").textContent=audience+"%";
-  turn++;nodeLayer.innerHTML="";
-
-  const goNext=()=>{
-    document.querySelectorAll(".recipe").forEach(x=>x.classList.remove("possible","matched"));
-    if(turn>=TOTAL_TURNS){
-      document.getElementById("turnLabel").textContent="LIVE CLEAR";
-      document.getElementById("countdown").textContent="END";
-      document.getElementById("themeName").textContent="FINAL RESULT";
-      document.getElementById("finalScoreValue").textContent=score.toLocaleString();
-      finalScoreOverlay.style.display="flex";
-    }else setTimeout(()=>openHand(false),300);
-  };
-
-  if(matches.length){
-    const top=[...matches].sort((a,b)=>b.seq.length-a.seq.length)[0];
-    const route=types.map(x=>waveJP[x]).join(" → ");
-    showCutin(matches.length,top.name,gained,route,goNext);
-  }else{
-    document.getElementById("noComboOverlay").style.display="flex";
-    setTimeout(()=>{document.getElementById("noComboOverlay").style.display="none";goNext()},520);
-  }
-}
-
-let lastAnimFrame=0;
-function animateNodes(now){
-  if(now-lastAnimFrame<32){requestAnimationFrame(animateNodes);return}
-  const dt=Math.min(48,now-lastMoveTime);lastMoveTime=now;lastAnimFrame=now;
-  if(active){
-    currentNodes.forEach(el=>{
-      if(el.dataset.moving!=="1"||drawn.includes(el))return;
-      el._px+=el._vx*dt;el._py+=el._vy*dt;
-      if(el._px<10){el._px=10;el._vx=Math.abs(el._vx)}if(el._px>90){el._px=90;el._vx=-Math.abs(el._vx)}
-      if(el._py<13){el._py=13;el._vy=Math.abs(el._vy)}if(el._py>74){el._py=74;el._vy=-Math.abs(el._vy)}
-      el.style.left=el._px+"%";el.style.top=el._py+"%";
-    });
-    if(dragging)drawLines();
-  }
-  requestAnimationFrame(animateNodes);
-}
-requestAnimationFrame(animateNodes);
-
-function preGameCountdown(cb){
-  keepLiveVideoPlaying();
-  const overlay=document.getElementById("preCountdown");overlay.style.display="flex";overlay.style.background="rgba(3,6,14,.48)";
-  const seq=["3","2","1","LIVE START!"];let i=0;overlay.textContent=seq[0];
-  const iv=setInterval(()=>{
-    i++;
-    if(i>=seq.length){clearInterval(iv);overlay.style.display="none";cb();return}
-    overlay.textContent=seq[i];
-  },560);
-}
-function startMainGame(){
-  turn=0;score=0;audience=20;
-  document.getElementById("score").textContent="0";document.getElementById("audience").textContent="20%";
-  preGameCountdown(()=>openHand(false));
-}
-function resetGame(){
-  if(timer){clearInterval(timer);timer=null}
-  active=false;dragging=false;turn=0;score=0;audience=20;drawn=[];selectedRecipes=[];
-  nodeLayer.innerHTML="";ctx.clearRect(0,0,canvas.width,canvas.height);
-  handOverlay.style.display="none";storyOverlay.style.display="none";tutorialHint.style.display="none";
-  cutinOverlay.style.display="none";finalScoreOverlay.style.display="none";waveFlash.classList.remove("fire");
-  document.getElementById("score").textContent="0";document.getElementById("audience").textContent="20%";
-  document.getElementById("countdown").textContent=String(TURN_TIME);
-  if(tutorialMode){tutorialPhase="hand";setTimeout(()=>openHand(true),250)}
-  else setTimeout(()=>preGameCountdown(()=>openHand(false)),250);
-}
-resetBtn.addEventListener("click",resetGame);
-document.getElementById("retryLive").addEventListener("click",()=>{finalScoreOverlay.style.display="none";tutorialMode=false;resetGame()});
-
-[1,2,3,4].forEach(i=>{const img=new Image();img.src=`cutin_${i}.png`});
-resetGame();
+{name:"空へ届け",seq:["voice","voice"],mult:1.30,effect:"SCORE +30%"},
+{name:"光とともに",seq:["glory","glory"],mult:1.30,effect:"SCORE +30%"},
+{name:"鼓動を重ねて",seq:["rhythm","rhythm"],mult:1.30,effect:"SCORE +30%"},
+{name:"まだ歌える",seq:["voice","voice","voice"],mult:1.60,effect:"SCORE +60%"},
+{name:"夜を駆けて",seq:["rhythm","rhythm","rhythm"],mult:1.60,effect:"SCORE +60%"},
+{name:"星なき空を照らして",seq:["glory","glory","glory"],mult:1.60,effect:"SCORE +60%"},
+{name:"この声が届くなら",seq:["voice","rhythm","voice"],mult:1.70,effect:"SCORE +70%"},
+{name:"明日を照らして",seq:["glory","voice","glory"],mult:1.70,effect:"SCORE +70%"},
+{name:"この鼓動が続くなら",seq:["rhythm","glory","rhythm"],mult:1.70,effect:"SCORE +70%"},
+{name:"世界の果てまで",seq:["voice","rhythm","glory"],mult:1.90,effect:"SCORE +90%"},
+{name:"夜明けの向こうへ",seq:["glory","rhythm","voice"],mult:1.90,effect:"SCORE +90%"},
+{name:"光のない世界で",seq:["voice","glory","rhythm","voice"],mult:2.20,effect:"SCORE +120%"},
+{name:"反逆の歌",seq:["voice"],mult:1,rin:true,effect:"声を含むCOMBO連続成立 → +100%"},
+{name:"渇望の歌",seq:["voice","voice"],mult:1,rin:true,effect:"次の声COMBO → +100%"},
+{name:"世界に抗う、反逆の歌姫",seq:["voice","rhythm","glory","voice"],mult:1,rin:true,effect:"声COMBO 3連続以上 → +150%"}];
+const themes=[["声響増幅","盤面を読み、最適な4枚を選べ"],["律動干渉","短いルートと複合ルートを見極めろ"],["華耀共鳴","華を含む高倍率ルートを狙え"],["複合共鳴","一本の線に複数COMBOを仕込め"],["臨界声響","最大4COMBOを狙え"]];
+const $=id=>document.getElementById(id),game=$("game"),nodeLayer=$("nodeLayer"),canvas=$("lineLayer"),ctx=canvas.getContext("2d"),touchSurface=$("touchSurface");
+let turn=0,score=0,audience=20,time=TURN_TIME,timer=null,active=false,dragging=false,resolved=false,currentNodes=[],drawn=[],selectedRecipes=[],handCards=[],handSelection=[],lastMove=0;
+let tutorial=new URLSearchParams(location.search).get("tutorial")==="1",tutorialPhase=tutorial?"select":"off";
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function seqHTML(seq){return seq.map((t,i)=>`${i?"<span>›</span>":""}<img src="${waveIcon[t]}" alt="${waveJP[t]}">`).join("")}
+function resize(){const r=game.getBoundingClientRect();canvas.width=r.width*devicePixelRatio;canvas.height=r.height*devicePixelRatio;canvas.style.width=r.width+"px";canvas.style.height=r.height+"px";ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);draw()}
+addEventListener("resize",resize);
+function setTheme(){const t=themes[turn]||themes[4];$("turnLabel").textContent=`TURN ${turn+1} / 5`;$("themeName").textContent=t[0];$("themeDesc").textContent=t[1];$("difficulty").textContent=turn===4?"MOVING":"STATIC"}
+function renderDock(){const row=document.querySelector("#comboDock .recipeRow");row.innerHTML="";selectedRecipes.forEach(r=>{const d=document.createElement("div");d.className="recipe"+(r.rin?" uniqueRecipe":"");d.dataset.recipe=r.name;d.innerHTML=`<div class="recipeName">${r.rin?"◆ ":""}${r.name}</div><div class="recipeSeq">${seqHTML(r.seq)}</div>`;row.appendChild(d)})}
+function renderHand(){const g=$("handGrid");g.innerHTML="";handCards.forEach(r=>{const b=document.createElement("button");b.className="handCard"+(r.rin?" rinCard":"")+(handSelection.includes(r)?" selected":"");b.innerHTML=`<div class="pickNo">${handSelection.indexOf(r)+1}</div><div class="cardName">${r.rin?"◆ ":""}${r.name}</div><div class="cardSeq">${seqHTML(r.seq)}</div><div class="cardEffect">${r.effect}</div>`;b.onclick=()=>{const i=handSelection.indexOf(r);if(i>=0)handSelection.splice(i,1);else if(handSelection.length<4)handSelection.push(r);renderHand()};g.appendChild(b)});$("handCount").textContent=`${handSelection.length} / 4 SET`;$("handSetBtn").disabled=handSelection.length!==4}
+function makeHand(tut){handSelection=[];handCards=tut?["反逆の歌","空へ届け","まだ歌える","この声が届くなら","光とともに","鼓動を重ねて"].map(n=>comboPool.find(c=>c.name===n)):shuffle(comboPool).slice(0,6);renderHand()}
+$("handSetBtn").onclick=()=>{if(handSelection.length!==4)return;selectedRecipes=[...handSelection];renderDock();$("handOverlay").style.display="none";if(tutorial&&tutorialPhase==="select"){tutorialPhase="trace";$("tutorialHint").textContent="4つのCOMBOを一本の線で成立させよう";$("tutorialHint").style.display="block"}active=true};
+function clock(){clearInterval(timer);timer=setInterval(()=>{time-=.1;$("countdown").textContent=Math.max(0,Math.ceil(time));if(time<=0){clearInterval(timer);timer=null;finish()}},100)}
+function openTurn(tut=false){resolved=false;active=false;dragging=false;drawn=[];selectedRecipes=[];time=30;setTheme();spawn(tut);$("handOverlay").style.display="block";$("handGuide").textContent=tut?"盤面を見て、最大4COMBOを作れる4枚を選んでください":"盤面を見て、今回使う4枚を選択";makeHand(tut);$("countdown").textContent="30";clock()}
+function points(n){const p=[];while(p.length<n){const q={x:11+Math.random()*78,y:13+Math.random()*58};if(p.every(v=>Math.hypot(q.x-v.x,q.y-v.y)>12))p.push(q)}return p}
+function spawn(tut){nodeLayer.innerHTML="";currentNodes=[];let types,pts;if(tut){types=["voice","voice","voice","rhythm","voice","glory","rhythm","glory"];pts=[{x:18,y:34},{x:37,y:27},{x:55,y:35},{x:68,y:48},{x:52,y:61},{x:24,y:61},{x:78,y:25},{x:82,y:65}]}else{const n=[8,8,9,9,10][turn],all=["voice","rhythm","glory"];types=Array.from({length:n},()=>all[Math.floor(Math.random()*3)]);pts=points(n)}types.forEach((type,i)=>{const e=document.createElement("div");e.className=`node ${type}`+(types.length>=9?" compact":" medium");e.style.left=pts[i].x+"%";e.style.top=pts[i].y+"%";e.dataset.type=type;e.dataset.moving=(!tut&&turn===4)?"1":"0";e._px=pts[i].x;e._py=pts[i].y;const a=Math.random()*6.28;e._vx=Math.cos(a)*.004;e._vy=Math.sin(a)*.004;nodeLayer.appendChild(e);currentNodes.push(e)});resize()}
+function center(e){const g=game.getBoundingClientRect(),r=e.getBoundingClientRect();return{x:r.left-g.left+r.width/2,y:r.top-g.top+r.height/2}}
+function draw(temp){const w=canvas.width/devicePixelRatio,h=canvas.height/devicePixelRatio;ctx.clearRect(0,0,w,h);if(!drawn.length)return;const p=drawn.map(center);if(temp)p.push(temp);if(p.length<2)return;const gr=ctx.createLinearGradient(0,0,w,h);gr.addColorStop(0,"#6ee1ff");gr.addColorStop(.5,"#dca0ff");gr.addColorStop(1,"#ffeb96");ctx.save();ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();p.forEach((v,i)=>i?ctx.lineTo(v.x,v.y):ctx.moveTo(v.x,v.y));ctx.strokeStyle=gr;ctx.lineWidth=5;ctx.shadowColor="#a87cff";ctx.shadowBlur=8;ctx.stroke();ctx.restore()}
+function pos(x,y){const r=game.getBoundingClientRect();return{x:x-r.left,y:y-r.top}}
+function hit(p){const g=game.getBoundingClientRect();return currentNodes.find(e=>{const r=e.getBoundingClientRect();return Math.hypot(p.x-(r.left-g.left+r.width/2),p.y-(r.top-g.top+r.height/2))<r.width*.62})}
+function has(route,seq){outer:for(let i=0;i<=route.length-seq.length;i++){for(let j=0;j<seq.length;j++)if(route[i+j]!==seq[j])continue outer;return true}return false}
+function matches(route){return selectedRecipes.filter(r=>has(route,r.seq))}
+function add(e){if(!e||drawn.includes(e))return;drawn.push(e);e.classList.add("sel");const route=drawn.map(n=>n.dataset.type);document.querySelectorAll(".recipe").forEach(x=>{const r=selectedRecipes.find(v=>v.name===x.dataset.recipe);x.classList.toggle("matched",!!r&&has(route,r.seq))});draw()}
+function begin(x,y){if(!active)return;dragging=true;const p=pos(x,y);add(hit(p));draw(p)}
+function move(x,y){if(!active||!dragging)return;const now=performance.now();if(now-lastMove<30)return;lastMove=now;const p=pos(x,y);add(hit(p));draw(p)}
+function end(){if(!active||!dragging)return;dragging=false;draw();if(drawn.length)finish()}
+touchSurface.addEventListener("touchstart",e=>{if(active&&e.touches[0]){e.preventDefault();begin(e.touches[0].clientX,e.touches[0].clientY)}},{passive:false});touchSurface.addEventListener("touchmove",e=>{if(dragging&&e.touches[0]){e.preventDefault();move(e.touches[0].clientX,e.touches[0].clientY)}},{passive:false});touchSurface.addEventListener("touchend",e=>{e.preventDefault();end()},{passive:false});touchSurface.onmousedown=e=>begin(e.clientX,e.clientY);addEventListener("mousemove",e=>move(e.clientX,e.clientY));addEventListener("mouseup",end);
+function uniqueFx(card,done){$("uniqueFxName").textContent=card.name;$("uniqueFxSub").textContent=card.effect;const f=$("uniqueFx");f.style.display="flex";f.classList.remove("fire");void f.offsetWidth;f.classList.add("fire");if(navigator.vibrate)navigator.vibrate(35);setTimeout(()=>{f.style.display="none";done()},480)}
+function cutin(level,name,gain,route,done){level=Math.max(1,Math.min(4,level));const o=$("cutinOverlay");o.className=`level${level}`;$("cutinImage").src=`cutin_${level}.png`;$("cutinMoveName").textContent=name;$("cutinGainScore").textContent=`+${gain.toLocaleString()}`;$("cutinRoute").textContent=route;$("waveFlash").classList.remove("fire");void $("waveFlash").offsetWidth;$("waveFlash").classList.add("fire");setTimeout(()=>{o.style.display="block";o.classList.add("enter");const hold=[0,700,800,900,1250][level];setTimeout(()=>{o.classList.remove("enter");o.classList.add("exit");setTimeout(()=>{o.style.display="none";o.className="";done()},200)},hold)},70)}
+function calc(types,m){let mult=1;m.filter(x=>!x.rin).forEach(x=>mult*=x.mult);const vm=m.filter(x=>!x.rin&&x.seq.includes("voice"));if(m.some(x=>x.name==="反逆の歌")&&vm.length>=2)mult*=2;if(m.some(x=>x.name==="渇望の歌")&&vm.length>=1)mult*=2;if(m.some(x=>x.name==="世界に抗う、反逆の歌姫")&&vm.length>=3)mult*=2.5;return Math.round(Math.max(1,types.length)*6500*mult)}
+function finish(){if(!active||resolved)return;resolved=true;active=false;clearInterval(timer);timer=null;const types=drawn.map(n=>n.dataset.type),m=matches(types);if(tutorial&&tutorialPhase==="trace"&&m.length<4){resolved=false;$("tutorialHint").textContent=`現在 ${m.length} COMBO。4 COMBOになる一本を探してもう一度！`;setTimeout(()=>{drawn=[];currentNodes.forEach(n=>n.classList.remove("sel"));draw();active=true},450);return}const gain=calc(types,m);score+=gain;audience=Math.min(100,audience+types.length+m.length*6);$("score").textContent=score.toLocaleString();$("audience").textContent=audience+"%";const after=()=>{if(m.length)cutin(m.length,m[m.length-1].name,gain,types.map(x=>waveJP[x]).join(" → "),next);else next()};const u=m.find(x=>x.rin);u?uniqueFx(u,after):after();
+function next(){if(tutorial&&tutorialPhase==="trace"){tutorialPhase="story";$("tutorialHint").style.display="none";story();return}turn++;if(turn>=5){$("turnLabel").textContent="LIVE CLEAR";$("countdown").textContent="END";$("themeName").textContent="FINAL RESULT";$("finalScoreValue").textContent=score.toLocaleString();$("finalScoreOverlay").style.display="flex"}else setTimeout(()=>openTurn(false),300)}}
+function story(){const s=[["試験官","……凄まじい歌力だ！"],["試験官","もっと！"],["凛","……言われなくても"]];let i=0;const show=()=>{$("storySpeaker").textContent=s[i][0];$("storyText").textContent=s[i][1];$("storyOverlay").style.display="flex"};show();$("storyOverlay").onclick=()=>{i++;if(i>=s.length){$("storyOverlay").style.display="none";$("tutorialComplete").style.display="flex";setTimeout(()=>{$("tutorialComplete").style.display="none";tutorial=false;turn=0;score=0;audience=20;pre(()=>openTurn(false))},900)}else show()}}
+function pre(cb){const o=$("preCountdown"),s=["3","2","1","LIVE START!"];let i=0;o.style.display="flex";o.textContent=s[0];const iv=setInterval(()=>{i++;if(i>=s.length){clearInterval(iv);o.style.display="none";cb()}else o.textContent=s[i]},520)}
+let la=0;function anim(now){if(now-la>32){la=now;if(active){currentNodes.forEach(e=>{if(e.dataset.moving!=="1"||drawn.includes(e))return;e._px+=e._vx*32;e._py+=e._vy*32;if(e._px<10||e._px>90)e._vx*=-1;if(e._py<13||e._py>74)e._vy*=-1;e.style.left=e._px+"%";e.style.top=e._py+"%"});if(dragging)draw()}}requestAnimationFrame(anim)}requestAnimationFrame(anim);
+function reset(){clearInterval(timer);turn=0;score=0;audience=20;active=false;resolved=false;drawn=[];$("score").textContent="0";$("audience").textContent="20%";$("finalScoreOverlay").style.display="none";$("handOverlay").style.display="none";tutorial?setTimeout(()=>openTurn(true),200):setTimeout(()=>pre(()=>openTurn(false)),200)}
+$("resetBtn").onclick=reset;$("retryLive").onclick=()=>{tutorial=false;reset()};[1,2,3,4].forEach(i=>{const im=new Image();im.src=`cutin_${i}.png`});reset();
 
 </script>
 </body>
